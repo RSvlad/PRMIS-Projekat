@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "PodmorniceServer\\PodmorniceServer.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "..\\Klijent\\PodmorniceKlijent\\PodmorniceKlijent.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
