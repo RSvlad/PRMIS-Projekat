@@ -8,3 +8,13 @@ C:\Users\D1d1\Desktop\MrezeProjekat\Klijent\PodmorniceKlijent\obj\Debug\Podmorni
 C:\Users\D1d1\Desktop\MrezeProjekat\Klijent\PodmorniceKlijent\obj\Debug\Podmorni.14C447BF.Up2Date
 C:\Users\D1d1\Desktop\MrezeProjekat\Klijent\PodmorniceKlijent\obj\Debug\PodmorniceKlijent.exe
 C:\Users\D1d1\Desktop\MrezeProjekat\Klijent\PodmorniceKlijent\obj\Debug\PodmorniceKlijent.pdb
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\bin\Debug\PodmorniceKlijent.exe.config
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\bin\Debug\PodmorniceKlijent.exe
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\bin\Debug\PodmorniceKlijent.pdb
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\bin\Debug\PodmorniceLibrary.dll
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\bin\Debug\PodmorniceLibrary.pdb
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\obj\Debug\PodmorniceKlijent.csproj.AssemblyReference.cache
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\obj\Debug\PodmorniceKlijent.csproj.CoreCompileInputs.cache
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\obj\Debug\Podmorni.14C447BF.Up2Date
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\obj\Debug\PodmorniceKlijent.exe
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\Klijent\PodmorniceKlijent\obj\Debug\PodmorniceKlijent.pdb

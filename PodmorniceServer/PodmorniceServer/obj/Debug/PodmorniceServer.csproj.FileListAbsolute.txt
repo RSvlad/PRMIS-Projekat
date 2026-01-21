@@ -8,3 +8,13 @@ C:\Users\D1d1\Desktop\MrezeProjekat\PodmorniceServer\PodmorniceServer\obj\Debug\
 C:\Users\D1d1\Desktop\MrezeProjekat\PodmorniceServer\PodmorniceServer\obj\Debug\Podmorni.6E25ACEF.Up2Date
 C:\Users\D1d1\Desktop\MrezeProjekat\PodmorniceServer\PodmorniceServer\obj\Debug\PodmorniceServer.exe
 C:\Users\D1d1\Desktop\MrezeProjekat\PodmorniceServer\PodmorniceServer\obj\Debug\PodmorniceServer.pdb
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\bin\Debug\PodmorniceServer.exe.config
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\bin\Debug\PodmorniceServer.exe
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\bin\Debug\PodmorniceServer.pdb
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\bin\Debug\PodmorniceLibrary.dll
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\bin\Debug\PodmorniceLibrary.pdb
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\obj\Debug\PodmorniceServer.csproj.AssemblyReference.cache
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\obj\Debug\PodmorniceServer.csproj.CoreCompileInputs.cache
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\obj\Debug\Podmorni.6E25ACEF.Up2Date
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\obj\Debug\PodmorniceServer.exe
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceServer\PodmorniceServer\obj\Debug\PodmorniceServer.pdb

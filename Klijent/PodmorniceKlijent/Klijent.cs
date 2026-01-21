@@ -23,10 +23,12 @@ namespace PodmorniceKlijent
             Console.WriteLine("==========KLIJENT JE POKRENUT==========");
             Console.WriteLine("Pokrenuti prijavu na server? (prijava/ne): ");
             string ans = Console.ReadLine();
+            int TCPPortServera;
+            string adresaServeraZaTCP;
             if (ans.ToLower().Equals("prijava"))
             {
                 Socket clientUDP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                IPEndPoint destinationPoint = new IPEndPoint(IPAddress.Parse("192.168.2.108"), 15005); 
+                IPEndPoint destinationPoint = new IPEndPoint(IPAddress.Parse("192.168.2.108"), 15005);  //TODO nekako nabavi adresu servera za UDP dinamicki
                 EndPoint clientPoint = new IPEndPoint(IPAddress.Any, 0);
 
                 BinaryFormatter bf = new BinaryFormatter();
@@ -41,9 +43,16 @@ namespace PodmorniceKlijent
                             byte[] podaci = ms.ToArray();
 
                             int brBajta = clientUDP.SendTo(podaci, 0, podaci.Length, SocketFlags.None, destinationPoint);
-                            prijavljen = true;
-                        }
 
+                        }
+                        //uzimam podatke za TCP konekciju
+                        byte[] recievingBuffer = new byte[1024];
+                        int bytesRecieved = clientUDP.ReceiveFrom(recievingBuffer, ref clientPoint);
+                        string[] data = Encoding.ASCII.GetString(recievingBuffer, 0, bytesRecieved).Split(':');
+                        adresaServeraZaTCP = data[0];
+                        TCPPortServera = int.Parse(data[1]);
+                        Console.WriteLine($"Prijava uspesna! Podaci za TCP konekciju - Adresa: {adresaServeraZaTCP}, Port: {TCPPortServera}");
+                        prijavljen = true;
                     }
                     catch (SocketException ex)
                     {
