@@ -28,7 +28,7 @@ namespace PodmorniceServer
             List<EndPoint> tackeIgraca = new List<EndPoint>();
 
 
-            Console.WriteLine("==========SERVER JE POKRENUT==========");
+            Console.WriteLine($"==========SERVER JE POKRENUT NA ADRESI {adresa} ==========");
             #region prijave
             do
             {
@@ -37,8 +37,8 @@ namespace PodmorniceServer
             } while (brojIgraca < 2);
 
             Socket serverUDP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint serverPoint = new IPEndPoint(IPAddress.Parse(adresa), 15005);  //15005 jer se lako pamti 
-            serverUDP.Bind(serverPoint);
+            IPEndPoint serverUDPPoint = new IPEndPoint(IPAddress.Parse(adresa), 15005);  //15005 jer se lako pamti 
+            serverUDP.Bind(serverUDPPoint);
             byte[] recievingBuffer = new byte[1024];
             EndPoint clientPoint = new IPEndPoint(IPAddress.Any, 0);
 
@@ -84,7 +84,7 @@ namespace PodmorniceServer
             #endregion prijave
 
 
-            #region unos potrebnih podataka
+            #region unos potrebnih podataka i uspostavljanje TCP veze
 
             Console.WriteLine("Unesite dimenzije table X i Y: ");
             Console.Write("X: ");
@@ -94,9 +94,25 @@ namespace PodmorniceServer
             Console.WriteLine("Unesite dozvoljeni broj promasaja: ");
             dozvoljenoPromasaja = Int32.Parse(Console.ReadLine());
 
-            string porukaZaTcp = $"Velicina table je {dimX} x {dimY}, posaljite brojevne vrednosti koje predstavljaju polja vasih podmornica (1 - {dimX * dimY}). Dozvoljen broj promasaja: {dozvoljenoPromasaja}.";
+            string porukaZaPocetak = $"Velicina table je {dimX} x {dimY}, posaljite brojevne vrednosti koje predstavljaju polja vasih podmornica (1 - {dimX * dimY}). Dozvoljen broj promasaja: {dozvoljenoPromasaja}.";
 
-            #endregion unos potrebnih podataka
+
+            Socket serverTCP = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint serverTCPPoint = new IPEndPoint(IPAddress.Parse(adresa), TCPPort);
+            serverTCP.Bind(serverTCPPoint);
+            serverTCP.Listen(brojIgraca);
+            List<Socket> clientTCPs = new List<Socket>();
+            int prihvacenih = 0;
+
+            while(prihvacenih < brojIgraca)
+            {
+                Socket clientSocket = serverTCP.Accept();
+                clientTCPs.Add(clientSocket);
+                prihvacenih++;
+            }
+            
+
+            #endregion unos potrebnih podataka i uspostavljanje TCP veze
 
             Console.ReadKey();
         }

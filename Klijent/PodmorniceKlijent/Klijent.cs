@@ -20,7 +20,8 @@ namespace PodmorniceKlijent
             bool prijavljen = false;
             Igrac ja = new Igrac();
             #region prijava
-            Console.WriteLine("==========KLIJENT JE POKRENUT==========");
+            Console.WriteLine("==========KLIJENT JE POKRENUT. UNESI ADRESU SERVERA: ==========");
+            string ipServera = Console.ReadLine();
             Console.WriteLine("Pokrenuti prijavu na server? (prijava/ne): ");
             string ans = Console.ReadLine();
             int TCPPortServera;
@@ -28,7 +29,7 @@ namespace PodmorniceKlijent
             if (ans.ToLower().Equals("prijava"))
             {
                 Socket clientUDP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                IPEndPoint destinationPoint = new IPEndPoint(IPAddress.Parse("192.168.2.108"), 15005);  //TODO nekako nabavi adresu servera za UDP dinamicki
+                IPEndPoint destinationPoint = new IPEndPoint(IPAddress.Parse(ipServera), 15005);  //TODO nekako nabavi adresu servera za UDP dinamicki
                 EndPoint clientPoint = new IPEndPoint(IPAddress.Any, 0);
 
                 BinaryFormatter bf = new BinaryFormatter();
