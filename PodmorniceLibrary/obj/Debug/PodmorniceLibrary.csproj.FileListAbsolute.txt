@@ -4,3 +4,9 @@ C:\Users\D1d1\Desktop\MrezeProjekat\PodmorniceLibrary\obj\Debug\PodmorniceLibrar
 C:\Users\D1d1\Desktop\MrezeProjekat\PodmorniceLibrary\obj\Debug\PodmorniceLibrary.csproj.CoreCompileInputs.cache
 C:\Users\D1d1\Desktop\MrezeProjekat\PodmorniceLibrary\obj\Debug\PodmorniceLibrary.dll
 C:\Users\D1d1\Desktop\MrezeProjekat\PodmorniceLibrary\obj\Debug\PodmorniceLibrary.pdb
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceLibrary\bin\Debug\PodmorniceLibrary.dll
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceLibrary\bin\Debug\PodmorniceLibrary.pdb
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceLibrary\obj\Debug\PodmorniceLibrary.csproj.AssemblyReference.cache
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceLibrary\obj\Debug\PodmorniceLibrary.csproj.CoreCompileInputs.cache
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceLibrary\obj\Debug\PodmorniceLibrary.dll
+C:\Users\D1d1\Desktop\ProjekatMreze\PRMIS-Projekat\PodmorniceLibrary\obj\Debug\PodmorniceLibrary.pdb

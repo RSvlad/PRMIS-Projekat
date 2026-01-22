@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PodmorniceKlijent
@@ -66,6 +67,8 @@ namespace PodmorniceKlijent
 
                 #region uspostavljanje TCP veze i primanje podataka za pocetak igre
 
+                int dimX, dimY, dozvoljenoPromasaja;
+
                 while (!krajIgre)
                 {
                     try
@@ -86,8 +89,12 @@ namespace PodmorniceKlijent
                         int byteCount = clientTCP.Receive(buffer);
                         string serverMessage = Encoding.UTF8.GetString(buffer, 0, byteCount);
                         Console.WriteLine(serverMessage);
+
+                        (dimX, dimY, dozvoljenoPromasaja) = ParsirajPoruku(serverMessage);
+
+                        List<int> uneseneVrednosti = unesiPodmornice(dimX, dimY);
                     }
-                    catch(SocketException ex) when (ex.SocketErrorCode != SocketError.ConnectionRefused)  //mnogo sam ponosan na ovaj deo. U sustini, ako je ovaj exception samo znaci da se ceka i dalje server jer admin unosi podatke,
+                    catch (SocketException ex) when (ex.SocketErrorCode != SocketError.ConnectionRefused)  //mnogo sam ponosan na ovaj deo. U sustini, ako je ovaj exception samo znaci da se ceka i dalje server jer admin unosi podatke,
                     {                                                                                     // pa ga samo zanemarujem da mi ne bi na svakih sekund dok podaci ne stignu iskakao na ekranu 
                         Console.WriteLine($"Doslo je do greske tokom uspostavljanja TCP konekcije: \n{ex}");
                     }
@@ -98,5 +105,36 @@ namespace PodmorniceKlijent
                 Console.ReadKey();
             }
         }
+
+        static (int, int, int) ParsirajPoruku(string serverMessage)
+        {
+            Regex regex = new Regex(@"Velicina table je (\d+)\s*x\s*(\d+).*Dozvoljen broj promasaja:\s*(\d+)", RegexOptions.Singleline);
+
+            Match match = regex.Match(serverMessage);
+
+            if (!match.Success)
+            {
+                throw new Exception("Neispravan format poruke sa servera.");
+            }
+
+            int dimX = int.Parse(match.Groups[1].Value);
+            int dimY = int.Parse(match.Groups[2].Value);
+            int dozvoljenoPromasaja = int.Parse(match.Groups[3].Value);
+
+            return (dimX, dimY, dozvoljenoPromasaja);
+        }
+        static List<int> unesiPodmornice(int dimX, int dimY)
+        {
+            if(dimX > dimY)
+            {
+                Console.WriteLine($"Unesite {dimX} podmornica (tabla je {dimX} * {dimY}): ");
+            }
+            else
+            {
+
+            }
+            return null;
+        }
     }
+
 }

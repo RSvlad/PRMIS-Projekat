@@ -14,4 +14,11 @@ namespace PodmorniceLibrary
         public int[] podmornice;
         public int[][] tabla;
     }
+
+    public class Simboli
+    {
+        public char vecGadjano = 'M';
+        public char pogodjeno = 'H';
+        public char nijeGadjano = '_';
+    }
 }
