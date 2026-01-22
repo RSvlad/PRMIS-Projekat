@@ -92,7 +92,7 @@ namespace PodmorniceKlijent
 
                         (dimX, dimY, dozvoljenoPromasaja) = ParsirajPoruku(serverMessage);
 
-                        List<int> uneseneVrednosti = unesiPodmornice(dimX, dimY);
+                        int[] uneseneVrednosti = unesiPodmornice(dimX, dimY);
                     }
                     catch (SocketException ex) when (ex.SocketErrorCode != SocketError.ConnectionRefused)  //mnogo sam ponosan na ovaj deo. U sustini, ako je ovaj exception samo znaci da se ceka i dalje server jer admin unosi podatke,
                     {                                                                                     // pa ga samo zanemarujem da mi ne bi na svakih sekund dok podaci ne stignu iskakao na ekranu 
@@ -123,17 +123,46 @@ namespace PodmorniceKlijent
 
             return (dimX, dimY, dozvoljenoPromasaja);
         }
-        static List<int> unesiPodmornice(int dimX, int dimY)
+        static int[] unesiPodmornice(int dimX, int dimY)  //TODO dodaj proveru da vidis jesu li podmornice u istom redu jer to navodno ne sme
         {
-            if(dimX > dimY)
+            int[] brojevi = null;
+            int broj;
+            int i = 0;
+            if (dimX > dimY)
             {
-                Console.WriteLine($"Unesite {dimX} podmornica (tabla je {dimX} * {dimY}): ");
+                Console.WriteLine($"Unesite {dimX} podmornica. (Tabla je {dimX} * {dimY}): ");
+                brojevi = new int[dimX];
+                while (i < dimX)
+                {
+                    Console.WriteLine($"Unesite podmornicu broj {i + 1}: ");
+                    broj = Int32.Parse(Console.ReadLine());
+                    if (broj % dimY == 0)  //JAAAAAAAAKO sam ponosan na ovo. Morao sam u flow state da udjem da bih uspeo
+                    {
+                        Console.WriteLine("NE TAKO! Ovo bi probilo tablu! Probaj ponovo");
+                        continue;
+                    }
+                    brojevi[i] = broj;
+                    i++;
+                }
             }
             else
             {
-
+                Console.WriteLine($"Unesite {dimY} podmornica. (Tabla je {dimX} * {dimY}): ");
+                brojevi = new int[dimY];
+                while (i < dimY)
+                {
+                    Console.WriteLine($"Unesite podmornicu broj {i + 1}: ");
+                    broj = Int32.Parse(Console.ReadLine());
+                    if (broj % dimY == 0)  //JAAAAAAAAKO sam ponosan na ovo. Morao sam u flow state da udjem da bih uspeo
+                    {
+                        Console.WriteLine("NE TAKO! Ovo bi probilo tablu! Probaj ponovo");
+                        continue;
+                    }
+                    brojevi[i] = broj;
+                    i++;
+                }
             }
-            return null;
+            return brojevi;
         }
     }
 
