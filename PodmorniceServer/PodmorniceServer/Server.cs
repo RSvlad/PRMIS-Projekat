@@ -18,6 +18,7 @@ namespace PodmorniceServer
     {
         static void Main(string[] args)
         {
+            bool krajIgre = false;
             int brojIgraca = -1;
             int brojAktivnihIgraca = 0;
             string adresa = UzmiAdresu();
@@ -29,12 +30,22 @@ namespace PodmorniceServer
 
 
             Console.WriteLine($"==========SERVER JE POKRENUT NA ADRESI {adresa} ==========");
-            #region prijave
+            #region unos podataka i prijave
             do
             {
                 Console.WriteLine("Unesite broj igraca (minimum 2): ");
                 brojIgraca = Int32.Parse(Console.ReadLine());
-            } while (brojIgraca < 2);
+            } while (brojIgraca < 1); //todo na kraju ne zaboravi da proemnis ovo u <2
+
+            Console.WriteLine("Unesite dimenzije table X i Y: ");
+            Console.Write("X: ");
+            dimX = Int32.Parse(Console.ReadLine());
+            Console.Write("Y: ");
+            dimY = Int32.Parse(Console.ReadLine());
+            Console.WriteLine("Unesite dozvoljeni broj promasaja: ");
+            dozvoljenoPromasaja = Int32.Parse(Console.ReadLine());
+
+            string porukaZaPocetak = $"Velicina table je {dimX} x {dimY}, posaljite brojevne vrednosti koje predstavljaju polja vasih podmornica (1 - {dimX * dimY}). Dozvoljen broj promasaja: {dozvoljenoPromasaja}.";
 
             Socket serverUDP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint serverUDPPoint = new IPEndPoint(IPAddress.Parse(adresa), 15005);  //15005 jer se lako pamti 
@@ -81,21 +92,10 @@ namespace PodmorniceServer
             }
             serverUDP.Close();
             Console.WriteLine("Prijave su zavrsene. Igra pocinje. Saljem podatke za TCP svim klijentima.");
-            #endregion prijave
+            #endregion unos podataka i prijave
 
 
-            #region unos potrebnih podataka i uspostavljanje TCP veze
-
-            Console.WriteLine("Unesite dimenzije table X i Y: ");
-            Console.Write("X: ");
-            dimX = Int32.Parse(Console.ReadLine());
-            Console.Write("Y: ");
-            dimY = Int32.Parse(Console.ReadLine());
-            Console.WriteLine("Unesite dozvoljeni broj promasaja: ");
-            dozvoljenoPromasaja = Int32.Parse(Console.ReadLine());
-
-            string porukaZaPocetak = $"Velicina table je {dimX} x {dimY}, posaljite brojevne vrednosti koje predstavljaju polja vasih podmornica (1 - {dimX * dimY}). Dozvoljen broj promasaja: {dozvoljenoPromasaja}.";
-
+            #region uspostavljanje TCP veze
 
             Socket serverTCP = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverTCPPoint = new IPEndPoint(IPAddress.Parse(adresa), TCPPort);
@@ -104,16 +104,29 @@ namespace PodmorniceServer
             List<Socket> clientTCPs = new List<Socket>();
             int prihvacenih = 0;
 
-            while(prihvacenih < brojIgraca)
+            while (prihvacenih < brojIgraca)
             {
                 Socket clientSocket = serverTCP.Accept();
                 clientTCPs.Add(clientSocket);
                 prihvacenih++;
             }
-            
 
-            #endregion unos potrebnih podataka i uspostavljanje TCP veze
+            while (!krajIgre)
+            {
+                try
+                {
+                    foreach (Socket clientSocket in clientTCPs)
+                    {
+                        clientSocket.Send(Encoding.UTF8.GetBytes(porukaZaPocetak));
+                    }
+                }catch(Exception ex)
+                {
+                    Console.WriteLine("Greska pri slanju pocetne poruke TCP klijentima: " + ex.Message);
+                }
+            }
+            #endregion uspostavljanje TCP veze
 
+            serverTCP.Close();
             Console.ReadKey();
         }
 

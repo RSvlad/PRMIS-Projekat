@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
@@ -17,6 +18,7 @@ namespace PodmorniceKlijent
     {
         static void Main(string[] args)
         {
+            bool krajIgre = false;
             bool prijavljen = false;
             Igrac ja = new Igrac();
             #region prijava
@@ -24,8 +26,8 @@ namespace PodmorniceKlijent
             string ipServera = Console.ReadLine();
             Console.WriteLine("Pokrenuti prijavu na server? (prijava/ne): ");
             string ans = Console.ReadLine();
-            int TCPPortServera;
-            string adresaServeraZaTCP;
+            int TCPPortServera = 0;
+            string adresaServeraZaTCP = "N/A";
             if (ans.ToLower().Equals("prijava"))
             {
                 Socket clientUDP = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -61,6 +63,37 @@ namespace PodmorniceKlijent
                     }
                 }
                 #endregion prijava
+
+                #region uspostavljanje TCP veze i primanje podataka za pocetak igre
+
+                while (!krajIgre)
+                {
+                    try
+                    {
+                        Socket clientTCP = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        if (TCPPortServera == 0)
+                        {
+                            Console.WriteLine("\nGreska pri preuzimanju podataka za TCP!");
+                            return;
+                        }
+                        IPEndPoint serverTCPPoint = new IPEndPoint(IPAddress.Parse(adresaServeraZaTCP), TCPPortServera);
+                        clientTCP.Connect(serverTCPPoint);
+                        Console.WriteLine("\nUspesno uspostavljena TCP konekcija sa serverom.");
+
+                        byte[] buffer = new byte[1024];
+                        string info;
+                        // Prijem početne poruke
+                        int byteCount = clientTCP.Receive(buffer);
+                        string serverMessage = Encoding.UTF8.GetString(buffer, 0, byteCount);
+                        Console.WriteLine(serverMessage);
+                    }
+                    catch(SocketException ex) when (ex.SocketErrorCode != SocketError.ConnectionRefused)  //mnogo sam ponosan na ovaj deo. U sustini, ako je ovaj exception samo znaci da se ceka i dalje server jer admin unosi podatke,
+                    {                                                                                     // pa ga samo zanemarujem da mi ne bi na svakih sekund dok podaci ne stignu iskakao na ekranu 
+                        Console.WriteLine($"Doslo je do greske tokom uspostavljanja TCP konekcije: \n{ex}");
+                    }
+                }
+
+                #endregion uspostavljanje TCP veze i primanje podataka za pocetak igre
                 clientUDP.Close();
                 Console.ReadKey();
             }
