@@ -3,7 +3,7 @@
   "WorkspaceRootPath": "C:\\Users\\D1d1\\Desktop\\ProjekatMreze\\PRMIS-Projekat\\PodmorniceServer\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{ACF9AD75-1C69-442A-BC08-34CF6DAE328E}|PodmorniceServer\\PodmorniceServer.csproj|c:\\users\\d1d1\\desktop\\projekatmreze\\prmis-projekat\\podmorniceserver\\podmorniceserver\\server.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{ACF9AD75-1C69-442A-BC08-34CF6DAE328E}|PodmorniceServer\\PodmorniceServer.csproj|C:\\Users\\D1d1\\Desktop\\ProjekatMreze\\PRMIS-Projekat\\PodmorniceServer\\podmorniceserver\\server.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{ACF9AD75-1C69-442A-BC08-34CF6DAE328E}|PodmorniceServer\\PodmorniceServer.csproj|solutionrelative:podmorniceserver\\server.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
@@ -20,8 +20,12 @@
       "DocumentGroups": [
         {
           "DockedWidth": 201,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 3,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 2,
@@ -32,8 +36,7 @@
               "RelativeToolTip": "..\\PodmorniceLibrary\\Igrac.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-21T18:34:55.211Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-21T18:34:55.211Z"
             },
             {
               "$type": "Document",
@@ -43,7 +46,7 @@
               "RelativeDocumentMoniker": "..\\Klijent\\PodmorniceKlijent\\Klijent.cs",
               "ToolTip": "C:\\Users\\D1d1\\Desktop\\ProjekatMreze\\PRMIS-Projekat\\Klijent\\PodmorniceKlijent\\Klijent.cs",
               "RelativeToolTip": "..\\Klijent\\PodmorniceKlijent\\Klijent.cs",
-              "ViewState": "AgIAADMAAAAAAAAAAAAmwE8AAAAYAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAE8AAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-21T17:12:49.765Z",
               "EditorCaption": ""
@@ -56,7 +59,7 @@
               "RelativeDocumentMoniker": "PodmorniceServer\\Server.cs",
               "ToolTip": "C:\\Users\\D1d1\\Desktop\\ProjekatMreze\\PRMIS-Projekat\\PodmorniceServer\\PodmorniceServer\\Server.cs",
               "RelativeToolTip": "PodmorniceServer\\Server.cs",
-              "ViewState": "AgIAAFUAAAAAAAAAAAAgwH4AAAAXAAAAAAAAAA==",
+              "ViewState": "AgIAAG0AAAAAAAAAAAAgwIIAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-18T16:21:56.054Z",
               "EditorCaption": ""

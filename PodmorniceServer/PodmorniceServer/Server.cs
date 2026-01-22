@@ -21,7 +21,7 @@ namespace PodmorniceServer
             bool krajIgre = false;
             int brojIgraca = -1;
             int brojAktivnihIgraca = 0;
-            string adresa = UzmiAdresu();
+            string adresa = IPAddress.Loopback.ToString();
             int TCPPort = 15006;
             int dimX, dimY;
             int dozvoljenoPromasaja;
@@ -129,43 +129,5 @@ namespace PodmorniceServer
             serverTCP.Close();
             Console.ReadKey();
         }
-
-        /// odavde na dole je kod za uzimanje IP adrese masina, u zacvisnosti da li je wifi ili ethernet
-        static string UzmiAdresu()
-        {
-            // 2️⃣ Fallback to Wi-Fi
-            string wifiIp = GetIPv4ByType(NetworkInterfaceType.Wireless80211);
-            if (wifiIp != null)
-                return wifiIp;
-
-            // 1️⃣ Try Ethernet first
-            string ethernetIp = GetIPv4ByType(NetworkInterfaceType.Ethernet);
-            if (ethernetIp != null)
-                return ethernetIp;
-
-
-            return null;
-        }
-
-        static string GetIPv4ByType(NetworkInterfaceType type)
-        {
-            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                if (ni.NetworkInterfaceType == type &&
-                    ni.OperationalStatus == OperationalStatus.Up)
-                {
-                    foreach (var ip in ni.GetIPProperties().UnicastAddresses)
-                    {
-                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            return ip.Address.ToString();
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-
     }
 }
