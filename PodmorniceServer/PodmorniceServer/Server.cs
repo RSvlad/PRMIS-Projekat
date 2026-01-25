@@ -110,8 +110,8 @@ namespace PodmorniceServer
                 clientTCPs.Add(clientSocket);
                 prihvacenih++;
             }
-
-            while (!krajIgre)
+            bool porukaPoslata = false;
+            while (!porukaPoslata)
             {
                 try
                 {
@@ -119,12 +119,33 @@ namespace PodmorniceServer
                     {
                         clientSocket.Send(Encoding.UTF8.GetBytes(porukaZaPocetak));
                     }
-                }catch(Exception ex)
+                    porukaPoslata = true;
+                }
+                catch (Exception ex)
                 {
                     Console.WriteLine("Greska pri slanju pocetne poruke TCP klijentima: " + ex.Message);
                 }
             }
             #endregion uspostavljanje TCP veze
+
+            #region zapravoIgranje
+
+            byte[] buffer = new byte[1024];
+            while (!krajIgre)
+            {
+                foreach (Socket clientTCP in clientTCPs)  //testno primanje, nije gotovo
+                {
+                    int byteNo = clientTCP.Receive(buffer);
+                    string primljenaPoruka = Encoding.UTF8.GetString(buffer, 0, byteNo);
+                    int[] podmornice = primljenaPoruka.Split(',').Select(int.Parse).ToArray();
+                    foreach (int podmornica in podmornice)
+                    {
+                        Console.WriteLine("Igrac je poslao podmornicu na polju: " + podmornica);
+                    }
+                }
+            }
+
+            #endregion zapravoIgranje
 
             serverTCP.Close();
             Console.ReadKey();

@@ -67,13 +67,14 @@ namespace PodmorniceKlijent
 
                 #region uspostavljanje TCP veze i primanje podataka za pocetak igre
 
-                int dimX, dimY, dozvoljenoPromasaja;
-
-                while (!krajIgre)
+                int dimX = -1, dimY = -1, dozvoljenoPromasaja = -1;
+                bool tcpUspeh = false;
+                Socket clientTCP = null;
+                while (!tcpUspeh)
                 {
                     try
                     {
-                        Socket clientTCP = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        clientTCP = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         if (TCPPortServera == 0)
                         {
                             Console.WriteLine("\nGreska pri preuzimanju podataka za TCP!");
@@ -92,7 +93,7 @@ namespace PodmorniceKlijent
 
                         (dimX, dimY, dozvoljenoPromasaja) = ParsirajPoruku(serverMessage);
 
-                        int[] uneseneVrednosti = unesiPodmornice(dimX, dimY);
+                        tcpUspeh = true;
                     }
                     catch (SocketException ex) when (ex.SocketErrorCode != SocketError.ConnectionRefused)  //mnogo sam ponosan na ovaj deo. U sustini, ako je ovaj exception samo znaci da se ceka i dalje server jer admin unosi podatke,
                     {                                                                                     // pa ga samo zanemarujem da mi ne bi na svakih sekund dok podaci ne stignu iskakao na ekranu 
@@ -102,7 +103,25 @@ namespace PodmorniceKlijent
 
                 #endregion uspostavljanje TCP veze i primanje podataka za pocetak igre
                 clientUDP.Close();
-                Console.ReadKey();
+
+
+                #region zapravoIgranje
+
+                if(dimX == -1 || dimY == -1 || dozvoljenoPromasaja == -1)
+                {
+                    Console.WriteLine("Greska pri parsiranju dimenzija table ili dozvoljenog broja promasaja.");
+                    return;
+                }
+
+                while (!krajIgre)
+                {
+                    int[] uneseneVrednosti = unesiPodmornice(dimX, dimY);
+                    clientTCP.Send(Encoding.UTF8.GetBytes(string.Join(",", uneseneVrednosti)));
+                }
+
+                #endregion zapravoIgranje
+
+                clientTCP.Close();
             }
         }
 
