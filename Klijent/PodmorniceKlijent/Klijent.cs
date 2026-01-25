@@ -144,13 +144,17 @@ namespace PodmorniceKlijent
         }
         static int[] unesiPodmornice(int dimX, int dimY) 
         {
-            int[] brojevi = null;
+            int[] brojevi = new int[dimX*dimY];
             int broj;
             int i = 0;
+            int dodato = 0;
             if (dimX > dimY)
             {
                 Console.WriteLine($"Unesite {dimX} podmornica. (Tabla je {dimX} * {dimY}): ");
-                brojevi = new int[dimX];
+                for (int j = 0; j < brojevi.Length; j++)  //da se broj%dimY ne bi desio na unosenju jedinice
+                {
+                    brojevi[j] = -1;
+                }
                 while (i < dimX)
                 {
                     Console.WriteLine($"Unesite podmornicu broj {i + 1}: ");
@@ -160,19 +164,24 @@ namespace PodmorniceKlijent
                         Console.WriteLine("NE TAKO! Ovo bi probilo tablu! Probaj ponovo");
                         continue;
                     }
-                    if(brojevi.Contains(broj-1))
+                    if(brojevi.Contains(broj) || brojevi.Contains(broj + 1))
                     {
                         Console.WriteLine("Ova podmornica bi dodirivala jedan kraj neke od postojecih! Probajte ponovo.");
                         continue;
                     }
-                    brojevi[i] = broj;
+                    brojevi[dodato] = broj;
+                    brojevi[dodato + 1] = broj + 1;   //posto su podmornice duzine 2
+                    dodato += 2;
                     i++;
                 }
             }
             else
             {
                 Console.WriteLine($"Unesite {dimY} podmornica. (Tabla je {dimX} * {dimY}): ");
-                brojevi = new int[dimY];
+                for (int j = 0; j < brojevi.Length; j++)  //da se broj%dimY ne bi desio na unosenju jedinice
+                {
+                    brojevi[j] = -1;
+                }
                 while (i < dimY)
                 {
                     Console.WriteLine($"Unesite podmornicu broj {i + 1}: ");
@@ -182,12 +191,14 @@ namespace PodmorniceKlijent
                         Console.WriteLine("NE TAKO! Ovo bi probilo tablu! Probaj ponovo");
                         continue;
                     }
-                    if (brojevi.Contains(broj - 1))
+                    if (brojevi.Contains(broj) || brojevi.Contains(broj + 1))
                     {
                         Console.WriteLine("Ova podmornica bi dodirivala jedan kraj neke od postojecih! Probajte ponovo.");
                         continue;
                     }
-                    brojevi[i] = broj;
+                    brojevi[dodato] = broj;
+                    brojevi[dodato + 1] = broj + 1;  //posto su podmornice duzine 2
+                    dodato += 2;
                     i++;
                 }
             }

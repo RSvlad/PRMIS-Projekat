@@ -140,6 +140,8 @@ namespace PodmorniceServer
                     int[] podmornice = primljenaPoruka.Split(',').Select(int.Parse).ToArray();
                     foreach (int podmornica in podmornice)
                     {
+                        if (podmornica == -1)  //jer niz za nepopunjena polja ima -1
+                            continue;
                         Console.WriteLine("Igrac je poslao podmornicu na polju: " + podmornica);
                     }
                 }
