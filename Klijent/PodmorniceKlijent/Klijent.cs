@@ -123,7 +123,7 @@ namespace PodmorniceKlijent
 
             return (dimX, dimY, dozvoljenoPromasaja);
         }
-        static int[] unesiPodmornice(int dimX, int dimY)  //TODO dodaj proveru da vidis jesu li podmornice u istom redu jer to navodno ne sme
+        static int[] unesiPodmornice(int dimX, int dimY) 
         {
             int[] brojevi = null;
             int broj;
@@ -141,6 +141,11 @@ namespace PodmorniceKlijent
                         Console.WriteLine("NE TAKO! Ovo bi probilo tablu! Probaj ponovo");
                         continue;
                     }
+                    if(brojevi.Contains(broj-1))
+                    {
+                        Console.WriteLine("Ova podmornica bi dodirivala jedan kraj neke od postojecih! Probajte ponovo.");
+                        continue;
+                    }
                     brojevi[i] = broj;
                     i++;
                 }
@@ -156,6 +161,11 @@ namespace PodmorniceKlijent
                     if (broj % dimY == 0)  //JAAAAAAAAKO sam ponosan na ovo. Morao sam u flow state da udjem da bih uspeo
                     {
                         Console.WriteLine("NE TAKO! Ovo bi probilo tablu! Probaj ponovo");
+                        continue;
+                    }
+                    if (brojevi.Contains(broj - 1))
+                    {
+                        Console.WriteLine("Ova podmornica bi dodirivala jedan kraj neke od postojecih! Probajte ponovo.");
                         continue;
                     }
                     brojevi[i] = broj;

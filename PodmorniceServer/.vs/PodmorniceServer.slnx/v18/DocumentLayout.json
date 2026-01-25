@@ -32,9 +32,9 @@
               "Title": "Klijent.cs",
               "DocumentMoniker": "C:\\Users\\D1d1\\Desktop\\ProjekatMreze\\PRMIS-Projekat\\Klijent\\PodmorniceKlijent\\Klijent.cs",
               "RelativeDocumentMoniker": "..\\Klijent\\PodmorniceKlijent\\Klijent.cs",
-              "ToolTip": "C:\\Users\\D1d1\\Desktop\\ProjekatMreze\\PRMIS-Projekat\\Klijent\\PodmorniceKlijent\\Klijent.cs",
-              "RelativeToolTip": "..\\Klijent\\PodmorniceKlijent\\Klijent.cs",
-              "ViewState": "AgIAAG4AAAAAAAAAAAD4v30AAACNAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\D1d1\\Desktop\\ProjekatMreze\\PRMIS-Projekat\\Klijent\\PodmorniceKlijent\\Klijent.cs*",
+              "RelativeToolTip": "..\\Klijent\\PodmorniceKlijent\\Klijent.cs*",
+              "ViewState": "AgIAAH0AAAAAAAAAAAA7wKkAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-21T17:12:49.765Z",
               "EditorCaption": ""
@@ -49,8 +49,7 @@
               "RelativeToolTip": "..\\PodmorniceLibrary\\Igrac.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-21T18:34:55.211Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-21T18:34:55.211Z"
             },
             {
               "$type": "Document",
@@ -62,8 +61,7 @@
               "RelativeToolTip": "PodmorniceServer\\Server.cs",
               "ViewState": "AgIAAEAAAAAAAAAAAAAgwCkAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-01-18T16:21:56.054Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-01-18T16:21:56.054Z"
             }
           ]
         }
