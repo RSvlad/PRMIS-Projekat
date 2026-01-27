@@ -105,7 +105,7 @@ namespace PodmorniceKlijent
                 clientUDP.Close();
 
 
-                #region zapravoIgranje
+                #region postavkaTable
 
                 if(dimX == -1 || dimY == -1 || dozvoljenoPromasaja == -1)
                 {
@@ -113,13 +113,15 @@ namespace PodmorniceKlijent
                     return;
                 }
 
-                while (!krajIgre)
+                bool postavljeno = false;
+                while (!postavljeno)
                 {
                     int[] uneseneVrednosti = unesiPodmornice(dimX, dimY);
                     clientTCP.Send(Encoding.UTF8.GetBytes(string.Join(",", uneseneVrednosti)));
+                    postavljeno = true;
                 }
 
-                #endregion zapravoIgranje
+                #endregion postavkaTable
 
                 clientTCP.Close();
             }

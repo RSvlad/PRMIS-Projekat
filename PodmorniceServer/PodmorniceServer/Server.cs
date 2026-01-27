@@ -73,6 +73,7 @@ namespace PodmorniceServer
                         Console.WriteLine("Prijava uspesna!");
                         Console.WriteLine("Igrac broj: " + (brojAktivnihIgraca + 1));
                         noviIgrac.identifikacioniBroj = brojAktivnihIgraca + 1;  //svakom igracu ide redni broj ulaska na server, kao u minecraft mini igrama
+                        noviIgrac.brojPromasaja = 0; //olaksava posao posle
                         aktivniIgraci.Add(noviIgrac);
                         brojAktivnihIgraca++;
                     }
@@ -130,29 +131,39 @@ namespace PodmorniceServer
             }
             #endregion uspostavljanje TCP veze
 
-            #region zapravoIgranje
-
+            #region postavkeTabli
+            bool postavljeno = false;
             byte[] buffer = new byte[1024];
-            while (!krajIgre)
+            while (!postavljeno)
             {
                 foreach (Socket clientTCP in clientTCPs)  //testno primanje, nije gotovo
                 {
                     int byteNo = clientTCP.Receive(buffer);
                     string primljenaPoruka = Encoding.UTF8.GetString(buffer, 0, byteNo);
                     int[] podmornice = primljenaPoruka.Split(',').Select(int.Parse).ToArray();
+                    int brojAktivnogIgraca = clientTCPs.IndexOf(clientTCP) + 1;
+                    aktivniIgraci[brojAktivnogIgraca - 1].podmornice = podmornice;  //dodavanje poslatih pre pocetka igre
                     foreach (int podmornica in podmornice)
                     {
-                        if (podmornica == -1)  //jer niz za nepopunjena polja ima -1
-                            continue;
-                        Console.WriteLine($"Igrac {clientTCPs.IndexOf(clientTCP) + 1} je poslao podmornicu na polju: " + podmornica);
+                        if (podmornica != -1)  //jer niz za nepopunjena polja ima -1
+                        Console.WriteLine($"Igrac {brojAktivnogIgraca} je poslao podmornicu na polju: " + podmornica);
                     }
+                    int[][] praznaTabla = null;
+                    for (int i = 0; i < dimX; i++)
+                        for (int j = 0; j < dimX; j++)
+                            praznaTabla[i][j] = Simboli.nijeGadjano;  
+
+                    aktivniIgraci[brojAktivnogIgraca - 1].tabla = praznaTabla; //na pocetku igre svima je tabla netaknuta
                 }
+                postavljeno = true;
             }
 
-            #endregion zapravoIgranje
+            #endregion postavkeTabli
 
             serverTCP.Close();
             Console.ReadKey();
         }
+
+
     }
 }
