@@ -1,5 +1,0 @@
-<Solution>
-  <Project Path="../Klijent/PodmorniceKlijent/PodmorniceKlijent.csproj" Id="b01b8010-ab28-43c0-81dd-798b04026b1e" />
-  <Project Path="../PodmorniceLibrary/PodmorniceLibrary.csproj" Id="6eec2238-c9b2-46dc-a8ab-7e5ff6e9b258" />
-  <Project Path="PodmorniceServer/PodmorniceServer.csproj" Id="acf9ad75-1c69-442a-bc08-34cf6dae328e" />
-</Solution>
