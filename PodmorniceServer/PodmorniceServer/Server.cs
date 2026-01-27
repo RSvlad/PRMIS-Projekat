@@ -117,7 +117,9 @@ namespace PodmorniceServer
                 {
                     foreach (Socket clientSocket in clientTCPs)
                     {
-                        clientSocket.Send(Encoding.UTF8.GetBytes(porukaZaPocetak));
+                        int brojTrenutnogIgraca = clientTCPs.IndexOf(clientSocket) + 1;
+                        string dodatakPoruci = "Vi ste igrac "+ brojTrenutnogIgraca.ToString();
+                        clientSocket.Send(Encoding.UTF8.GetBytes(porukaZaPocetak + dodatakPoruci));
                     }
                     porukaPoslata = true;
                 }
@@ -142,7 +144,7 @@ namespace PodmorniceServer
                     {
                         if (podmornica == -1)  //jer niz za nepopunjena polja ima -1
                             continue;
-                        Console.WriteLine("Igrac je poslao podmornicu na polju: " + podmornica);
+                        Console.WriteLine($"Igrac {clientTCPs.IndexOf(clientTCP) + 1} je poslao podmornicu na polju: " + podmornica);
                     }
                 }
             }
