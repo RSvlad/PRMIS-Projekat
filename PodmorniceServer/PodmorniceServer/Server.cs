@@ -148,10 +148,16 @@ namespace PodmorniceServer
                         if (podmornica != -1)  //jer niz za nepopunjena polja ima -1
                         Console.WriteLine($"Igrac {brojAktivnogIgraca} je poslao podmornicu na polju: " + podmornica);
                     }
-                    int[][] praznaTabla = null;
+                    int[][] praznaTabla = new int[dimX][];
                     for (int i = 0; i < dimX; i++)
+                    {
+                        praznaTabla[i] = new int[dimY]; //moram i kolone da inicijalizujem da ne bi bio null error opet
                         for (int j = 0; j < dimX; j++)
-                            praznaTabla[i][j] = Simboli.nijeGadjano;  
+                            praznaTabla[i][j] = Simboli.nijeGadjano;
+                    }
+
+                    Console.WriteLine("Tabla igraca " + brojAktivnogIgraca + ":");
+                    IspisiTablu(praznaTabla, dimX, dimY);
 
                     aktivniIgraci[brojAktivnogIgraca - 1].tabla = praznaTabla; //na pocetku igre svima je tabla netaknuta
                 }
@@ -164,6 +170,16 @@ namespace PodmorniceServer
             Console.ReadKey();
         }
 
-
+        static void IspisiTablu(int[][] tabla, int dimX, int dimY)
+        {
+            for (int i = 0; i < dimX; i++)
+            {
+                for (int j = 0; j < dimY; j++)
+                {
+                    Console.Write((char)tabla[i][j] + " ");
+                }
+                Console.WriteLine();
+            }
+        }
     }
 }
