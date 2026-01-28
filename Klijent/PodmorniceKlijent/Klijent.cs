@@ -107,7 +107,7 @@ namespace PodmorniceKlijent
 
                 #region postavkaTable
 
-                if(dimX == -1 || dimY == -1 || dozvoljenoPromasaja == -1)
+                if (dimX == -1 || dimY == -1 || dozvoljenoPromasaja == -1)
                 {
                     Console.WriteLine("Greska pri parsiranju dimenzija table ili dozvoljenog broja promasaja.");
                     return;
@@ -123,7 +123,156 @@ namespace PodmorniceKlijent
 
                 #endregion postavkaTable
 
+
+                #region gejmplej
+
+                Console.WriteLine("\nCekam da igra pocne...");
+                // Cekamo da server salje start
+                byte[] bufferStart = new byte[1024];
+                int bytesStart = clientTCP.Receive(bufferStart);
+                string startMsg = Encoding.UTF8.GetString(bufferStart, 0, bytesStart);
+
+                if (startMsg == "start")
+                {
+                    Console.WriteLine("\n========== IGRA JE POCELA! ==========\n");
+                }
+
+                while (!krajIgre)
+                {
+                    try
+                    {
+                        // Cekam poruku od servera, on inicira sve
+                        byte[] buffer = new byte[1024];
+                        int bytes = clientTCP.Receive(buffer);
+                        string poruka = Encoding.UTF8.GetString(buffer, 0, bytes);
+
+                        if (poruka.StartsWith("Potez igraca:"))
+                        {
+                            int mojID = int.Parse(poruka.Split(':')[1]);
+                            Console.WriteLine($"\n========== TVOJ RED MAJSTORE (Vi ste igrac {mojID}) ==========");
+
+                            bool nastavakPoteza = true;
+
+                            while (nastavakPoteza && !krajIgre)
+                            {
+                                // ID igraca ciju tablu zelim da vidim
+                                Console.WriteLine("\nUnesi ID igraca ciju tablu zelite da vidite:");
+                                int idMete = Int32.Parse(Console.ReadLine());
+
+                                string zahtev = $"pregledTable:{idMete}";
+                                clientTCP.Send(Encoding.UTF8.GetBytes(zahtev));
+
+                                byte[] bufferBoard = new byte[4096];
+                                int bytesBoard = clientTCP.Receive(bufferBoard);
+                                string odgovorBoard = Encoding.UTF8.GetString(bufferBoard, 0, bytesBoard);
+
+                                if (odgovorBoard.StartsWith("Greska:"))
+                                {
+                                    Console.WriteLine(odgovorBoard.Split(':')[1]);
+                                    continue;
+                                }
+
+                                if (odgovorBoard.StartsWith("Trazena tabla:"))
+                                {
+                                    string tablaPodaci = odgovorBoard.Split(':')[1];
+                                    Console.WriteLine($"\n===== TABLA IGRACA {idMete} =====");
+                                    PrikaziTablu(tablaPodaci, dimX, dimY);
+                                }
+
+                                Console.WriteLine($"\nUnesite broj polja koje zelite da gadjate (1-{dimX*dimY}):");
+                                int polje = Int32.Parse(Console.ReadLine());
+
+                                // Saljem gađanje
+                                string gadjanje = $"gadjanje:{idMete},{polje}";
+                                clientTCP.Send(Encoding.UTF8.GetBytes(gadjanje));
+
+                                // Primanje rezultata
+                                byte[] bufferRezultat = new byte[1024];
+                                int bytesRezultat = clientTCP.Receive(bufferRezultat);
+                                string rezultat = Encoding.UTF8.GetString(bufferRezultat, 0, bytesRezultat);
+
+                                if (rezultat.StartsWith("Greska:"))
+                                {
+                                    Console.WriteLine("Greska: " + rezultat.Split(':')[1]);
+                                    continue;
+                                }
+
+                                if (rezultat.StartsWith("REZULTAT:"))
+                                {
+                                    string status = rezultat.Split(':')[1];
+                                    Console.WriteLine($"\n*** {status} ***");
+
+                                    if (status == "PROMASIO")
+                                    {
+                                        nastavakPoteza = false;
+                                        Console.WriteLine("Vase potez je zavrsen. Promasio si kume, ocajno");
+                                    }
+                                    else if (status == "POGODIO")
+                                    {
+                                        Console.WriteLine("Imate pravo na jos jedan pokusaj!");
+                                        nastavakPoteza = true;
+                                    }
+                                    else if (status == "POTOPIO")
+                                    {
+                                        Console.WriteLine("Potopili ste podmornicu! Bravo majstore! Imate pravo na jos jedan pokusaj!");
+                                        nastavakPoteza = true;
+                                    }
+                                }
+                                else if (rezultat.StartsWith("Eliminisan:"))
+                                {
+                                    Console.WriteLine("\n" + rezultat.Split(':')[1]);
+                                    krajIgre = true;
+                                    nastavakPoteza = false;
+                                }
+                            }
+                        }
+                        else if (poruka.StartsWith("POBEDA:"))
+                        {
+                            Console.WriteLine("\n========================================");
+                            Console.WriteLine("    " + poruka.Split(':')[1]);
+                            Console.WriteLine("========================================");
+                            krajIgre = true;
+                        }
+                        else if (poruka.StartsWith("KRAJ:"))
+                        {
+                            Console.WriteLine("\n" + poruka.Split(':')[1]);
+                            krajIgre = true;
+                        }
+                        else if (poruka.StartsWith("Eliminisan:"))
+                        {
+                            Console.WriteLine("\n" + poruka.Split(':')[1]);
+                            krajIgre = true;
+                        }
+                        else
+                        {
+                            // Nije moj potez, cekam
+                            Console.WriteLine("Cekamo potez drugih igraca...");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Greska tokom igre: {ex.Message}");
+                        krajIgre = true;
+                    }
+                }
+                #endregion gejmplej
+
                 clientTCP.Close();
+                Console.ReadKey();
+            }
+        }
+
+        static void PrikaziTablu(string tablaPodaci, int dimX, int dimY)
+        {
+            string[] redovi = tablaPodaci.Split(';');
+            for (int i = 0; i < redovi.Length; i++)
+            {
+                string[] kolone = redovi[i].Split(',');
+                for (int j = 0; j < kolone.Length; j++)
+                {
+                    Console.Write(kolone[j] + " ");
+                }
+                Console.WriteLine();
             }
         }
 
@@ -144,9 +293,9 @@ namespace PodmorniceKlijent
 
             return (dimX, dimY, dozvoljenoPromasaja);
         }
-        static int[] unesiPodmornice(int dimX, int dimY) 
+        static int[] unesiPodmornice(int dimX, int dimY)
         {
-            int[] brojevi = new int[dimX*dimY];
+            int[] brojevi = new int[dimX * dimY];
             int broj;
             int i = 0;
             int dodato = 0;
@@ -166,7 +315,7 @@ namespace PodmorniceKlijent
                         Console.WriteLine("NE TAKO! Ovo bi probilo tablu! Probaj ponovo");
                         continue;
                     }
-                    if(brojevi.Contains(broj) || brojevi.Contains(broj + 1))
+                    if (brojevi.Contains(broj) || brojevi.Contains(broj + 1))
                     {
                         Console.WriteLine("Ova podmornica bi dodirivala jedan kraj neke od postojecih! Probajte ponovo.");
                         continue;

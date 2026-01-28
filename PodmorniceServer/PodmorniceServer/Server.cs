@@ -221,10 +221,260 @@ namespace PodmorniceServer
 
             #endregion postavkeTabli SA SELECT
 
+            #region gejmplej
+            Console.WriteLine("\n========== IGRA POCINJE! ==========\n");
+
+            int trenutniIgrac = 0; // Index igraca na potezu (0-based)
+            bool[] igraciAktivni = new bool[brojIgraca];
+            for (int i = 0; i < brojIgraca; i++)
+                igraciAktivni[i] = true;
+
+
+            string porukaPocetak = "start";
+            foreach (Socket client in clientTCPs)
+            {
+                client.Send(Encoding.UTF8.GetBytes(porukaPocetak));
+            }
+
+            while (!krajIgre)
+            {
+                // ako igrac nije aktivan, preskacem sta ce mi
+                if (!igraciAktivni[trenutniIgrac])
+                {
+                    trenutniIgrac = (trenutniIgrac + 1) % brojIgraca;
+
+                    // ako je to poslednji aktivan igra je gotova
+                    int brojAktivnih = igraciAktivni.Count(x => x);
+                    if (brojAktivnih <= 1)
+                    {
+                        krajIgre = true;
+                        break;
+                    }
+                    continue;
+                }
+
+                Socket trenutniSocket = clientTCPs[trenutniIgrac];
+                int idTrenutnogIgraca = trenutniIgrac + 1;
+
+
+                string porukaPotez = $"Potez igraca:{idTrenutnogIgraca}";
+                trenutniSocket.Send(Encoding.UTF8.GetBytes(porukaPotez));
+
+                bool ponovniPokusaj = true;
+
+                while (ponovniPokusaj && !krajIgre)
+                {
+                    try
+                    {
+                        // Cekam da klijent zatrazi tablu neciju
+                        byte[] bufferReq = new byte[1024];
+                        int bytesReq = trenutniSocket.Receive(bufferReq);
+                        string zahtev = Encoding.UTF8.GetString(bufferReq, 0, bytesReq);
+
+                        if (zahtev.StartsWith("pregledTable:"))
+                        {
+                            int idCiljnogIgraca = int.Parse(zahtev.Split(':')[1]);
+
+                            if (idCiljnogIgraca < 1 || idCiljnogIgraca > brojIgraca)
+                            {
+                                trenutniSocket.Send(Encoding.UTF8.GetBytes("Greska:Nevazeci ID igraca"));
+                                continue;
+                            }
+
+                            // Saljem trenutno stanje table tog igraca
+                            Igrac ciljniIgrac = aktivniIgraci[idCiljnogIgraca - 1];
+                            string tablaPoruka = SerijalizujTablu(ciljniIgrac.tabla, dimX, dimY);
+                            trenutniSocket.Send(Encoding.UTF8.GetBytes($"Trazena tabla:{tablaPoruka}"));
+
+                            Console.WriteLine($"Igrac {idTrenutnogIgraca} gleda tablu igraca broj {idCiljnogIgraca}");
+                        }
+                        else if (zahtev.StartsWith("gadjanje:"))
+                        {
+                            // Format: "gadjanje:idIgraca,polje"
+                            string[] delovi = zahtev.Split(':')[1].Split(',');
+                            int idMete = int.Parse(delovi[0]);
+                            int polje = int.Parse(delovi[1]);
+
+                            if (idMete < 1 || idMete > brojIgraca || idMete == idTrenutnogIgraca)
+                            {
+                                trenutniSocket.Send(Encoding.UTF8.GetBytes("Greska:Nevazeci cilj"));
+                                continue;
+                            }
+
+                            Igrac meta = aktivniIgraci[idMete - 1];
+
+                            int red = (polje - 1) / dimY;
+                            int kolona = (polje - 1) % dimY;
+
+                            if (red < 0 || red >= dimX || kolona < 0 || kolona >= dimY)
+                            {
+                                trenutniSocket.Send(Encoding.UTF8.GetBytes("Greska:Polje van granica!"));
+                                continue;
+                            }
+
+                            // Da li je vec gadjano ?
+                            if (meta.tabla[red][kolona] == Simboli.vecGadjano || meta.tabla[red][kolona] == Simboli.pogodjeno)
+                            {
+                                trenutniSocket.Send(Encoding.UTF8.GetBytes("Greska:Vec gadjano!"));
+                                continue;
+                            }
+
+                            //  Pogodak bre?
+                            bool jePogodak = meta.podmornice.Contains(polje);
+                            string rezultat = "";
+
+                            if (jePogodak)
+                            {
+                                meta.tabla[red][kolona] = Simboli.pogodjeno;
+
+                                // Provera potopa
+                                bool podmornicaPotopljena = ProveriPotopio(meta, polje, dimY);
+
+                                if (podmornicaPotopljena)
+                                {
+                                    rezultat = "POTOPIO";
+                                }
+                                else
+                                {
+                                    rezultat = "POGODIO";
+                                }
+
+                                ponovniPokusaj = true;
+                            }
+                            else
+                            {
+                                meta.tabla[red][kolona] = Simboli.vecGadjano;
+                                rezultat = "PROMASIO";
+                                aktivniIgraci[trenutniIgrac].brojPromasaja++;
+
+                                // Sledeci igrac na potezu
+                                ponovniPokusaj = false;
+                            }
+
+                            Console.WriteLine($"[Igrac {idTrenutnogIgraca}] -> [Igrac {idMete}]: {polje}, {rezultat}");
+
+                            // Rezultat ide igracu koji je gadjao
+                            trenutniSocket.Send(Encoding.UTF8.GetBytes($"REZULTAT:{rezultat}"));
+
+                            // Je li nesrecnik eliminisan?
+                            if (aktivniIgraci[trenutniIgrac].brojPromasaja >= dozvoljenoPromasaja)
+                            {
+                                igraciAktivni[trenutniIgrac] = false;
+                                trenutniSocket.Send(Encoding.UTF8.GetBytes("Eliminisan:Dostignut limit promasaja"));
+                                Console.WriteLine($"Igrac {idTrenutnogIgraca} je eliminisan (dostigao limit promasaja)");
+                                ponovniPokusaj = false;
+                            }
+
+                            // Provera da li su sve podmornice mete unistene
+                            if (SvePodmornicePotopljene(meta, dimX, dimY))
+                            {
+                                igraciAktivni[idMete - 1] = false;
+                                Console.WriteLine($"Igrac {idMete} je eliminisan (sve podmornice potopljene)");
+                            }
+
+                            // Da li je ostao samo jedan igrac
+                            int aktivnihIgraca = igraciAktivni.Count(x => x);
+                            if (aktivnihIgraca <= 1)
+                            {
+                                krajIgre = true;
+                                break;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Greska tokom poteza igraca {idTrenutnogIgraca}: {ex.Message}");
+                        ponovniPokusaj = false;
+                    }
+                }
+
+                // Sledeci igrac na potezu
+                trenutniIgrac = (trenutniIgrac + 1) % brojIgraca;
+            }
+
+            // Ko je pobedio ?
+            for (int i = 0; i < brojIgraca; i++)
+            {
+                if (igraciAktivni[i])
+                {
+                    Console.WriteLine($"\n========== IGRAC {i + 1} JE POBEDNIK! ==========");
+                    clientTCPs[i].Send(Encoding.UTF8.GetBytes("POBEDA:Cestitamo, pobedili ste!"));
+                }
+                else
+                {
+                    try
+                    {
+                        clientTCPs[i].Send(Encoding.UTF8.GetBytes("KRAJ:Izgubili ste"));
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Greska pri slanju poruke o kraju igre igracu {i + 1}: {e.Message}");
+                    }
+                }
+            }
+            #endregion gejmplej
+
             serverTCP.Close();
             Console.ReadKey();
         }
+        static string SerijalizujTablu(int[][] tabla, int dimX, int dimY)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < dimX; i++)
+            {
+                for (int j = 0; j < dimY; j++)
+                {
+                    sb.Append((char)tabla[i][j]);
+                    if (j < dimY - 1)
+                        sb.Append(',');
+                }
+                if (i < dimX - 1)
+                    sb.Append(';');
+            }
+            return sb.ToString();
+        }
 
+        static bool ProveriPotopio(Igrac igrac, int pogodjenoPolje, int dimY)
+        {
+            // jer podmornice imaju 2 polja svaka
+            int drugiDeo = -1;
+
+
+            if (igrac.podmornice.Contains(pogodjenoPolje - 1))
+                drugiDeo = pogodjenoPolje - 1;
+            else if (igrac.podmornice.Contains(pogodjenoPolje + 1))
+                drugiDeo = pogodjenoPolje + 1;
+
+            if (drugiDeo == -1)
+                return false;
+
+
+            int red1 = (pogodjenoPolje - 1) / dimY;
+            int kol1 = (pogodjenoPolje - 1) % dimY;
+            int red2 = (drugiDeo - 1) / dimY;
+            int kol2 = (drugiDeo - 1) % dimY;
+
+            // oba dela pogodjena?
+            return (igrac.tabla[red1][kol1] == Simboli.pogodjeno && igrac.tabla[red2][kol2] == Simboli.pogodjeno);
+        }
+
+        static bool SvePodmornicePotopljene(Igrac igrac, int dimX, int dimY)
+        {
+
+            for (int i = 0; i < igrac.podmornice.Length; i++)
+            {
+                int polje = igrac.podmornice[i];
+                if (polje == -1)
+                    continue;
+
+                int red = (polje - 1) / dimY;
+                int kol = (polje - 1) % dimY;
+
+                if (igrac.tabla[red][kol] != Simboli.pogodjeno)
+                    return false;
+            }
+            return true;
+        }
         static void IspisiTablu(int[][] tabla, int dimX, int dimY)
         {
             for (int i = 0; i < dimX; i++)
