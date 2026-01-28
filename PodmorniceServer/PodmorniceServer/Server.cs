@@ -4,13 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Policy;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PodmorniceServer
 {
@@ -96,75 +92,134 @@ namespace PodmorniceServer
             #endregion unos podataka i prijave
 
 
-            #region uspostavljanje TCP veze
+            #region uspostavljanje TCP veze SA SELECT
 
             Socket serverTCP = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverTCPPoint = new IPEndPoint(IPAddress.Parse(adresa), TCPPort);
             serverTCP.Bind(serverTCPPoint);
             serverTCP.Listen(brojIgraca);
             List<Socket> clientTCPs = new List<Socket>();
-            int prihvacenih = 0;
 
-            while (prihvacenih < brojIgraca)
+            List<Socket> socketsZaCitanje = new List<Socket>();
+            socketsZaCitanje.Add(serverTCP);
+
+            int prihvacenih = 0;
+            bool sviKlijentiPovezani = false;
+
+            Console.WriteLine("Cekam TCP konekcije od klijenata...");
+
+            while (!sviKlijentiPovezani)
             {
-                Socket clientSocket = serverTCP.Accept();
-                clientTCPs.Add(clientSocket);
-                prihvacenih++;
+                List<Socket> checkRead = new List<Socket>(socketsZaCitanje);
+                Socket.Select(checkRead, null, null, -1);
+
+                foreach (Socket socket in checkRead)
+                {
+                    if (socket == serverTCP)
+                    {
+                        Socket noviKlijent = serverTCP.Accept();
+                        clientTCPs.Add(noviKlijent);
+                        socketsZaCitanje.Add(noviKlijent);
+                        prihvacenih++;
+
+                        Console.WriteLine($"Novi klijent prihvacen: {prihvacenih}/{brojIgraca}");
+
+                        if (prihvacenih >= brojIgraca)
+                        {
+                            sviKlijentiPovezani = true;
+                            socketsZaCitanje.Remove(serverTCP);
+                        }
+                    }
+                }
             }
-            bool porukaPoslata = false;
-            while (!porukaPoslata)
+
+            Console.WriteLine("Svi klijenti su povezani.");
+
+            for (int i = 0; i < clientTCPs.Count; i++)
             {
                 try
                 {
-                    foreach (Socket clientSocket in clientTCPs)
-                    {
-                        int brojTrenutnogIgraca = clientTCPs.IndexOf(clientSocket) + 1;
-                        string dodatakPoruci = "Vi ste igrac "+ brojTrenutnogIgraca.ToString();
-                        clientSocket.Send(Encoding.UTF8.GetBytes(porukaZaPocetak + dodatakPoruci));
-                    }
-                    porukaPoslata = true;
+                    int brojTrenutnogIgraca = i + 1;
+                    string dodatakPoruci = $"Vi ste igrac {brojTrenutnogIgraca}";
+                    clientTCPs[i].Send(Encoding.UTF8.GetBytes(porukaZaPocetak + dodatakPoruci));
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Greska pri slanju pocetne poruke TCP klijentima: " + ex.Message);
+                    Console.WriteLine($"Greska pri slanju pocetne poruke klijentu {i + 1}: " + ex.Message);
                 }
             }
-            #endregion uspostavljanje TCP veze
 
-            #region postavkeTabli
+            #endregion uspostavljanje TCP veze SA SELECT
+
+            #region postavkeTabli SA SELECT
+
             bool postavljeno = false;
             byte[] buffer = new byte[1024];
+            HashSet<Socket> klijentiKojiSuPoslali = new HashSet<Socket>();
+
+            Console.WriteLine("Cekam podatke o podmornicama od svih klijenata...");
+
             while (!postavljeno)
             {
-                foreach (Socket clientTCP in clientTCPs)  //testno primanje, nije gotovo
+                List<Socket> checkRead = new List<Socket>(clientTCPs);
+                Socket.Select(checkRead, null, null, 100000);
+
+                foreach (Socket clientSocket in checkRead)
                 {
-                    int byteNo = clientTCP.Receive(buffer);
-                    string primljenaPoruka = Encoding.UTF8.GetString(buffer, 0, byteNo);
-                    int[] podmornice = primljenaPoruka.Split(',').Select(int.Parse).ToArray();
-                    int brojAktivnogIgraca = clientTCPs.IndexOf(clientTCP) + 1;
-                    aktivniIgraci[brojAktivnogIgraca - 1].podmornice = podmornice;  //dodavanje poslatih pre pocetka igre
-                    foreach (int podmornica in podmornice)
+                    try
                     {
-                        if (podmornica != -1)  //jer niz za nepopunjena polja ima -1
-                        Console.WriteLine($"Igrac {brojAktivnogIgraca} je poslao podmornicu na polju: " + podmornica);
+                        int dostupnoBajtova = clientSocket.Available;
+
+                        if (dostupnoBajtova > 0)
+                        {
+                            int byteNo = clientSocket.Receive(buffer);
+                            string primljenaPoruka = Encoding.UTF8.GetString(buffer, 0, byteNo);
+                            int[] podmornice = primljenaPoruka.Split(',').Select(int.Parse).ToArray();
+
+                            int brojAktivnogIgraca = clientTCPs.IndexOf(clientSocket) + 1;
+                            aktivniIgraci[brojAktivnogIgraca - 1].podmornice = podmornice;
+
+                            Console.WriteLine($"\nPodaci od igraca {brojAktivnogIgraca}");
+                            foreach (int podmornica in podmornice)
+                            {
+                                if (podmornica != -1)
+                                {
+                                    Console.WriteLine($"  - Podmornica na polju: {podmornica}");
+                                }
+                            }
+
+                            int[][] praznaTabla = new int[dimX][];
+                            for (int i = 0; i < dimX; i++)
+                            {
+                                praznaTabla[i] = new int[dimY]; //moram i kolone da inicijalizujem da ne bi bio null error opet
+                                for (int j = 0; j < dimY; j++)
+                                    praznaTabla[i][j] = Simboli.nijeGadjano;
+                            }
+
+                            Console.WriteLine($"Tabla igraca {brojAktivnogIgraca}:");
+                            IspisiTablu(praznaTabla, dimX, dimY);
+
+                            aktivniIgraci[brojAktivnogIgraca - 1].tabla = praznaTabla;
+                            klijentiKojiSuPoslali.Add(clientSocket);
+
+                            Console.WriteLine($"Primljeno {klijentiKojiSuPoslali.Count}/{brojIgraca} tabli.\n");
+                        }
                     }
-                    int[][] praznaTabla = new int[dimX][];
-                    for (int i = 0; i < dimX; i++)
+                    catch (Exception ex)
                     {
-                        praznaTabla[i] = new int[dimY]; //moram i kolone da inicijalizujem da ne bi bio null error opet
-                        for (int j = 0; j < dimX; j++)
-                            praznaTabla[i][j] = Simboli.nijeGadjano;
+                        int brojIgraca_err = clientTCPs.IndexOf(clientSocket) + 1;
+                        Console.WriteLine($"Greska pri obradi podataka od igraca {brojIgraca_err}: " + ex.Message);
                     }
-
-                    Console.WriteLine("Tabla igraca " + brojAktivnogIgraca + ":");
-                    IspisiTablu(praznaTabla, dimX, dimY);
-
-                    aktivniIgraci[brojAktivnogIgraca - 1].tabla = praznaTabla; //na pocetku igre svima je tabla netaknuta
                 }
-                postavljeno = true;
+
+                if (klijentiKojiSuPoslali.Count >= brojIgraca)
+                {
+                    postavljeno = true;
+                    Console.WriteLine("\nSVI IGRACI SU POSTAVILI SVOJE PODMORNICE");
+                }
             }
 
-            #endregion postavkeTabli
+            #endregion postavkeTabli SA SELECT
 
             serverTCP.Close();
             Console.ReadKey();
