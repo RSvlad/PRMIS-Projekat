@@ -1,17 +1,12 @@
 ﻿using PodmorniceLibrary;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Net.WebSockets;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace PodmorniceKlijent
 {
@@ -156,8 +151,25 @@ namespace PodmorniceKlijent
                             while (nastavakPoteza && !krajIgre)
                             {
                                 // ID igraca ciju tablu zelim da vidim
-                                Console.WriteLine("\nUnesi ID igraca ciju tablu zelite da vidite:");
-                                int idMete = Int32.Parse(Console.ReadLine());
+                                int idMete;
+                                while (true)
+                                {
+                                    Console.WriteLine("\nUnesi ID igraca ciju tablu zelite da vidite:");
+                                    string input = Console.ReadLine();
+                                    if (!Int32.TryParse(input, out idMete))
+                                    {
+                                        Console.WriteLine("Neispravan ID. Pokusajte ponovo.");
+                                        continue;
+                                    }
+
+                                    if (idMete == mojID)
+                                    {
+                                        Console.WriteLine("Ne mozes sebe da biras, glupane XD.");
+                                        continue;
+                                    }
+
+                                    break;
+                                }
 
                                 string zahtev = $"pregledTable:{idMete}";
                                 clientTCP.Send(Encoding.UTF8.GetBytes(zahtev));
@@ -179,7 +191,7 @@ namespace PodmorniceKlijent
                                     PrikaziTablu(tablaPodaci, dimX, dimY);
                                 }
 
-                                Console.WriteLine($"\nUnesite broj polja koje zelite da gadjate (1-{dimX*dimY}):");
+                                Console.WriteLine($"\nUnesite broj polja koje zelite da gadjate (1-{dimX * dimY}):");
                                 int polje = Int32.Parse(Console.ReadLine());
 
                                 // Saljem gađanje
@@ -242,6 +254,10 @@ namespace PodmorniceKlijent
                         {
                             Console.WriteLine("\n" + poruka.Split(':')[1]);
                             krajIgre = true;
+                        }
+                        else if (poruka.StartsWith("UPOZORENJE:"))
+                        {
+                            Console.WriteLine(poruka.Split(':')[1]);
                         }
                         else
                         {

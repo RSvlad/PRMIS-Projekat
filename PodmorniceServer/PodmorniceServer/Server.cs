@@ -347,6 +347,13 @@ namespace PodmorniceServer
                                 rezultat = "PROMASIO";
                                 aktivniIgraci[trenutniIgrac].brojPromasaja++;
 
+                                if (dozvoljenoPromasaja - aktivniIgraci[trenutniIgrac].brojPromasaja == 2)
+                                {
+                                    string upozorenje = "\n!!! UPOZORENJE !!! Imate jos samo 2 dozvoljenih promasaja pre eliminacije!";
+                                    trenutniSocket.Send(Encoding.UTF8.GetBytes($"UPOZORENJE:{upozorenje}"));
+                                    Console.WriteLine($"Igrac {idTrenutnogIgraca} je dobio upozorenje (preostalo promasaja: 2)");
+                                }
+
                                 // Sledeci igrac na potezu
                                 ponovniPokusaj = false;
                             }
