@@ -255,9 +255,16 @@ namespace PodmorniceKlijent
                             Console.WriteLine("\n" + poruka.Split(':')[1]);
                             krajIgre = true;
                         }
+                        else if (poruka.StartsWith("NERESENO:"))
+                        {
+                            Console.WriteLine($"\n{poruka.Split(':')[1]}");
+                            krajIgre = true;
+                        }
                         else if (poruka.StartsWith("UPOZORENJE:"))
                         {
+                            Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine(poruka.Split(':')[1]);
+                            Console.ResetColor();
                         }
                         else
                         {
@@ -272,6 +279,33 @@ namespace PodmorniceKlijent
                     }
                 }
                 #endregion gejmplej
+
+                Console.WriteLine("\n========================================");
+                Console.WriteLine("Da li zelite da igrate novu igru? (nova/ne):");
+                string odgovorNovaIgra = Console.ReadLine().Trim().ToLower();
+
+                try
+                {
+                    clientTCP.Send(Encoding.UTF8.GetBytes(odgovorNovaIgra));
+
+                    byte[] bufferFinal = new byte[1024];
+                    int bytesFinal = clientTCP.Receive(bufferFinal);
+                    string finalPoruka = Encoding.UTF8.GetString(bufferFinal, 0, bytesFinal);
+
+                    if (finalPoruka.StartsWith("RESTART:"))
+                    {
+                        Console.WriteLine("\n" + finalPoruka.Split(':')[1]);
+                        Console.WriteLine("Molimo zatvorite aplikaciju i pokrenite ponovo za novu igru.");
+                    }
+                    else if (finalPoruka.StartsWith("ZATVARANJE:"))
+                    {
+                        Console.WriteLine("\n" + finalPoruka.Split(':')[1]);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Greska: {ex.Message}");
+                }
 
                 clientTCP.Close();
                 Console.ReadKey();
