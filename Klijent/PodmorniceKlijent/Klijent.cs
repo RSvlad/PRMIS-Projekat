@@ -118,196 +118,207 @@ namespace PodmorniceKlijent
 
                 #endregion postavkaTable
 
-
-                #region gejmplej
-
-                Console.WriteLine("\nCekam da igra pocne...");
-                // Cekamo da server salje start
-                byte[] bufferStart = new byte[1024];
-                int bytesStart = clientTCP.Receive(bufferStart);
-                string startMsg = Encoding.UTF8.GetString(bufferStart, 0, bytesStart);
-
-                if (startMsg == "start")
+                bool igraSeNastavlja = true;
+                while (igraSeNastavlja)
                 {
-                    Console.WriteLine("\n========== IGRA JE POCELA! ==========\n");
-                }
+                    #region gejmplej
 
-                while (!krajIgre)
-                {
-                    try
+                    Console.WriteLine("\nCekam da igra pocne...");
+                    // Cekamo da server salje start
+                    byte[] bufferStart = new byte[1024];
+                    int bytesStart = clientTCP.Receive(bufferStart);
+                    string startMsg = Encoding.UTF8.GetString(bufferStart, 0, bytesStart);
+
+                    if (startMsg == "start")
                     {
-                        // Cekam poruku od servera, on inicira sve
-                        byte[] buffer = new byte[1024];
-                        int bytes = clientTCP.Receive(buffer);
-                        string poruka = Encoding.UTF8.GetString(buffer, 0, bytes);
+                        Console.WriteLine("\n========== IGRA JE POCELA! ==========\n");
+                    }
 
-                        if (poruka.StartsWith("Potez igraca:"))
+                    while (!krajIgre)
+                    {
+                        try
                         {
-                            int mojID = int.Parse(poruka.Split(':')[1]);
-                            Console.WriteLine($"\n========== TVOJ RED MAJSTORE (Vi ste igrac {mojID}) ==========");
+                            // Cekam poruku od servera, on inicira sve
+                            byte[] buffer = new byte[1024];
+                            int bytes = clientTCP.Receive(buffer);
+                            string poruka = Encoding.UTF8.GetString(buffer, 0, bytes);
 
-                            bool nastavakPoteza = true;
-
-                            while (nastavakPoteza && !krajIgre)
+                            if (poruka.StartsWith("Potez igraca:"))
                             {
-                                // ID igraca ciju tablu zelim da vidim
-                                int idMete;
-                                while (true)
+                                int mojID = int.Parse(poruka.Split(':')[1]);
+                                Console.WriteLine($"\n========== TVOJ RED MAJSTORE (Vi ste igrac {mojID}) ==========");
+
+                                bool nastavakPoteza = true;
+
+                                while (nastavakPoteza && !krajIgre)
                                 {
-                                    Console.WriteLine("\nUnesi ID igraca ciju tablu zelite da vidite:");
-                                    string input = Console.ReadLine();
-                                    if (!Int32.TryParse(input, out idMete))
+                                    // ID igraca ciju tablu zelim da vidim
+                                    int idMete;
+                                    while (true)
                                     {
-                                        Console.WriteLine("Neispravan ID. Pokusajte ponovo.");
+                                        Console.WriteLine("\nUnesi ID igraca ciju tablu zelite da vidite:");
+                                        string input = Console.ReadLine();
+                                        if (!Int32.TryParse(input, out idMete))
+                                        {
+                                            Console.WriteLine("Neispravan ID. Pokusajte ponovo.");
+                                            continue;
+                                        }
+
+                                        if (idMete == mojID)
+                                        {
+                                            Console.WriteLine("Ne mozes sebe da biras, glupane XD.");
+                                            continue;
+                                        }
+
+                                        break;
+                                    }
+
+                                    string zahtev = $"pregledTable:{idMete}";
+                                    clientTCP.Send(Encoding.UTF8.GetBytes(zahtev));
+
+                                    byte[] bufferBoard = new byte[4096];
+                                    int bytesBoard = clientTCP.Receive(bufferBoard);
+                                    string odgovorBoard = Encoding.UTF8.GetString(bufferBoard, 0, bytesBoard);
+
+                                    if (odgovorBoard.StartsWith("Greska:"))
+                                    {
+                                        Console.WriteLine(odgovorBoard.Split(':')[1]);
                                         continue;
                                     }
 
-                                    if (idMete == mojID)
+                                    if (odgovorBoard.StartsWith("Trazena tabla:"))
                                     {
-                                        Console.WriteLine("Ne mozes sebe da biras, glupane XD.");
+                                        string tablaPodaci = odgovorBoard.Split(':')[1];
+                                        Console.WriteLine($"\n===== TABLA IGRACA {idMete} =====");
+                                        PrikaziTablu(tablaPodaci, dimX, dimY);
+                                    }
+
+                                    Console.WriteLine($"\nUnesite broj polja koje zelite da gadjate (1-{dimX * dimY}):");
+                                    int polje = Int32.Parse(Console.ReadLine());
+
+                                    // Saljem gađanje
+                                    string gadjanje = $"gadjanje:{idMete},{polje}";
+                                    clientTCP.Send(Encoding.UTF8.GetBytes(gadjanje));
+
+                                    // Primanje rezultata
+                                    byte[] bufferRezultat = new byte[1024];
+                                    int bytesRezultat = clientTCP.Receive(bufferRezultat);
+                                    string rezultat = Encoding.UTF8.GetString(bufferRezultat, 0, bytesRezultat);
+
+                                    if (rezultat.StartsWith("Greska:"))
+                                    {
+                                        Console.WriteLine("Greska: " + rezultat.Split(':')[1]);
                                         continue;
                                     }
 
-                                    break;
-                                }
-
-                                string zahtev = $"pregledTable:{idMete}";
-                                clientTCP.Send(Encoding.UTF8.GetBytes(zahtev));
-
-                                byte[] bufferBoard = new byte[4096];
-                                int bytesBoard = clientTCP.Receive(bufferBoard);
-                                string odgovorBoard = Encoding.UTF8.GetString(bufferBoard, 0, bytesBoard);
-
-                                if (odgovorBoard.StartsWith("Greska:"))
-                                {
-                                    Console.WriteLine(odgovorBoard.Split(':')[1]);
-                                    continue;
-                                }
-
-                                if (odgovorBoard.StartsWith("Trazena tabla:"))
-                                {
-                                    string tablaPodaci = odgovorBoard.Split(':')[1];
-                                    Console.WriteLine($"\n===== TABLA IGRACA {idMete} =====");
-                                    PrikaziTablu(tablaPodaci, dimX, dimY);
-                                }
-
-                                Console.WriteLine($"\nUnesite broj polja koje zelite da gadjate (1-{dimX * dimY}):");
-                                int polje = Int32.Parse(Console.ReadLine());
-
-                                // Saljem gađanje
-                                string gadjanje = $"gadjanje:{idMete},{polje}";
-                                clientTCP.Send(Encoding.UTF8.GetBytes(gadjanje));
-
-                                // Primanje rezultata
-                                byte[] bufferRezultat = new byte[1024];
-                                int bytesRezultat = clientTCP.Receive(bufferRezultat);
-                                string rezultat = Encoding.UTF8.GetString(bufferRezultat, 0, bytesRezultat);
-
-                                if (rezultat.StartsWith("Greska:"))
-                                {
-                                    Console.WriteLine("Greska: " + rezultat.Split(':')[1]);
-                                    continue;
-                                }
-
-                                if (rezultat.StartsWith("REZULTAT:"))
-                                {
-                                    string status = rezultat.Split(':')[1];
-                                    Console.WriteLine($"\n*** {status} ***");
-
-                                    if (status == "PROMASIO")
+                                    if (rezultat.StartsWith("REZULTAT:"))
                                     {
+                                        string status = rezultat.Split(':')[1];
+                                        Console.WriteLine($"\n*** {status} ***");
+
+                                        if (status == "PROMASIO")
+                                        {
+                                            nastavakPoteza = false;
+                                            Console.WriteLine("Vase potez je zavrsen. Promasio si kume, ocajno");
+                                        }
+                                        else if (status == "POGODIO")
+                                        {
+                                            Console.WriteLine("Imate pravo na jos jedan pokusaj!");
+                                            nastavakPoteza = true;
+                                        }
+                                        else if (status == "POTOPIO")
+                                        {
+                                            Console.WriteLine("Potopili ste podmornicu! Bravo majstore! Imate pravo na jos jedan pokusaj!");
+                                            nastavakPoteza = true;
+                                        }
+                                        else if (status == "POTOPIO_KRAJ")
+                                        {
+                                            Console.WriteLine("Potopili ste POSLEDNJU podmornicu! Cekanje proglasenja pobednika...");
+                                            nastavakPoteza = false;
+                                        }
+                                    }
+                                    else if (rezultat.StartsWith("Eliminisan:"))
+                                    {
+                                        Console.WriteLine("\n" + rezultat.Split(':')[1]);
+                                        krajIgre = true;
                                         nastavakPoteza = false;
-                                        Console.WriteLine("Vase potez je zavrsen. Promasio si kume, ocajno");
                                     }
-                                    else if (status == "POGODIO")
-                                    {
-                                        Console.WriteLine("Imate pravo na jos jedan pokusaj!");
-                                        nastavakPoteza = true;
-                                    }
-                                    else if (status == "POTOPIO")
-                                    {
-                                        Console.WriteLine("Potopili ste podmornicu! Bravo majstore! Imate pravo na jos jedan pokusaj!");
-                                        nastavakPoteza = true;
-                                    }
-                                }
-                                else if (rezultat.StartsWith("Eliminisan:"))
-                                {
-                                    Console.WriteLine("\n" + rezultat.Split(':')[1]);
-                                    krajIgre = true;
-                                    nastavakPoteza = false;
                                 }
                             }
+                            else if (poruka.StartsWith("POBEDA:"))
+                            {
+                                Console.WriteLine("\n========================================");
+                                Console.WriteLine("    " + poruka.Split(':')[1]);
+                                Console.WriteLine("========================================");
+                                krajIgre = true;
+                            }
+                            else if (poruka.StartsWith("KRAJ:"))
+                            {
+                                Console.WriteLine("\n" + poruka.Split(':')[1]);
+                                krajIgre = true;
+                            }
+                            else if (poruka.StartsWith("Eliminisan:"))
+                            {
+                                Console.WriteLine("\n" + poruka.Split(':')[1]);
+                                krajIgre = true;
+                            }
+                            else if (poruka.StartsWith("NERESENO:"))
+                            {
+                                Console.WriteLine($"\n{poruka.Split(':')[1]}");
+                                krajIgre = true;
+                            }
+                            else if (poruka.StartsWith("UPOZORENJE:"))
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine(poruka.Split(':')[1]);
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                // Nije moj potez, cekam
+                                Console.WriteLine("Cekamo potez drugih igraca...");
+                            }
                         }
-                        else if (poruka.StartsWith("POBEDA:"))
+                        catch (Exception ex)
                         {
-                            Console.WriteLine("\n========================================");
-                            Console.WriteLine("    " + poruka.Split(':')[1]);
-                            Console.WriteLine("========================================");
+                            Console.WriteLine($"Greska tokom igre: {ex.Message}");
                             krajIgre = true;
                         }
-                        else if (poruka.StartsWith("KRAJ:"))
+                    }
+                    #endregion gejmplej
+
+                    Console.WriteLine("\n========================================");
+                    Console.WriteLine("Da li zelite da igrate novu igru? (nova/ne):");
+                    string odgovorNovaIgra = Console.ReadLine().Trim().ToLower();
+
+                    try
+                    {
+                        clientTCP.Send(Encoding.UTF8.GetBytes(odgovorNovaIgra));
+
+                        byte[] bufferFinal = new byte[1024];
+                        int bytesFinal = clientTCP.Receive(bufferFinal);
+                        string finalPoruka = Encoding.UTF8.GetString(bufferFinal, 0, bytesFinal);
+
+                        if (finalPoruka.StartsWith("RESTART:"))
                         {
-                            Console.WriteLine("\n" + poruka.Split(':')[1]);
-                            krajIgre = true;
+                            Console.WriteLine("\n" + finalPoruka.Split(':')[1]);
+                            Console.WriteLine("Restartujem igru...");
+                            krajIgre = false;
                         }
-                        else if (poruka.StartsWith("Eliminisan:"))
+                        else if (finalPoruka.StartsWith("ZATVARANJE:"))
                         {
-                            Console.WriteLine("\n" + poruka.Split(':')[1]);
-                            krajIgre = true;
-                        }
-                        else if (poruka.StartsWith("NERESENO:"))
-                        {
-                            Console.WriteLine($"\n{poruka.Split(':')[1]}");
-                            krajIgre = true;
-                        }
-                        else if (poruka.StartsWith("UPOZORENJE:"))
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine(poruka.Split(':')[1]);
-                            Console.ResetColor();
-                        }
-                        else
-                        {
-                            // Nije moj potez, cekam
-                            Console.WriteLine("Cekamo potez drugih igraca...");
+                            Console.WriteLine("\n" + finalPoruka.Split(':')[1]);
+                            igraSeNastavlja = false;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Greska tokom igre: {ex.Message}");
-                        krajIgre = true;
+                        Console.WriteLine($"Greska: {ex.Message}");
                     }
                 }
-                #endregion gejmplej
 
-                Console.WriteLine("\n========================================");
-                Console.WriteLine("Da li zelite da igrate novu igru? (nova/ne):");
-                string odgovorNovaIgra = Console.ReadLine().Trim().ToLower();
-
-                try
-                {
-                    clientTCP.Send(Encoding.UTF8.GetBytes(odgovorNovaIgra));
-
-                    byte[] bufferFinal = new byte[1024];
-                    int bytesFinal = clientTCP.Receive(bufferFinal);
-                    string finalPoruka = Encoding.UTF8.GetString(bufferFinal, 0, bytesFinal);
-
-                    if (finalPoruka.StartsWith("RESTART:"))
-                    {
-                        Console.WriteLine("\n" + finalPoruka.Split(':')[1]);
-                        Console.WriteLine("Molimo zatvorite aplikaciju i pokrenite ponovo za novu igru.");
-                    }
-                    else if (finalPoruka.StartsWith("ZATVARANJE:"))
-                    {
-                        Console.WriteLine("\n" + finalPoruka.Split(':')[1]);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Greska: {ex.Message}");
-                }
-
-                clientTCP.Close();
+                if (clientTCP != null)
+                    clientTCP.Close();
                 Console.ReadKey();
             }
         }

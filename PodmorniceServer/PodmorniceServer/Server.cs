@@ -112,8 +112,22 @@ namespace PodmorniceServer
 
             while (!sviKlijentiPovezani)
             {
-                List<Socket> checkRead = new List<Socket>(socketsZaCitanje);
-                Socket.Select(checkRead, null, null, -1);
+                List<Socket> checkRead = ProveriSokete(socketsZaCitanje);
+
+                if (checkRead.Count == 0)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    Socket.Select(checkRead, null, null, -1);
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine("Socket.Select greska: " + ex.Message);
+                    continue;
+                }
 
                 foreach (Socket socket in checkRead)
                 {
@@ -163,8 +177,23 @@ namespace PodmorniceServer
 
             while (!postavljeno)
             {
-                List<Socket> checkRead = new List<Socket>(clientTCPs);
-                Socket.Select(checkRead, null, null, 100000);
+                List<Socket> checkRead = ProveriSokete(clientTCPs);
+
+                if (checkRead.Count == 0)
+                {
+                    Console.WriteLine("Nema validnih klijenata za pocetak.");
+                    break;
+                }
+
+                try
+                {
+                    Socket.Select(checkRead, null, null, 100000);
+                }
+                catch (SocketException ex)
+                {
+                    Console.WriteLine("Socket.Select greska prilikom primanja tabli: " + ex.Message);
+                    continue;
+                }
 
                 foreach (Socket clientSocket in checkRead)
                 {
@@ -231,35 +260,39 @@ namespace PodmorniceServer
             for (int i = 0; i < brojIgraca; i++)
                 igraciAktivni[i] = true;
 
-
-            string porukaPocetak = "start";
-            foreach (Socket client in clientTCPs)
-            {
-                client.Send(Encoding.UTF8.GetBytes(porukaPocetak));
-            }
-
             while (novaIgra)
             {
+                string porukaPocetak = "start";
+                foreach (Socket client in clientTCPs)
+                {
+                    try
+                    {
+                        client.Send(Encoding.UTF8.GetBytes(porukaPocetak));
+                    }
+                    catch
+                    { }
+                }
+
+                System.Threading.Thread.Sleep(500);
+
                 while (!krajIgre)
                 {
+                    int preostalih = igraciAktivni.Count(x => x);
+                    if (preostalih <= 1)
+                    {
+                        krajIgre = true;
+                        break;
+                    }
+
                     // ako igrac nije aktivan, preskacem sta ce mi
                     if (!igraciAktivni[trenutniIgrac])
                     {
                         trenutniIgrac = (trenutniIgrac + 1) % brojIgraca;
-
-                        // ako je to poslednji aktivan igra je gotova
-                        int brojAktivnih = igraciAktivni.Count(x => x);
-                        if (brojAktivnih <= 1)
-                        {
-                            krajIgre = true;
-                            break;
-                        }
                         continue;
                     }
 
                     Socket trenutniSocket = clientTCPs[trenutniIgrac];
                     int idTrenutnogIgraca = trenutniIgrac + 1;
-
 
                     string porukaPotez = $"Potez igraca:{idTrenutnogIgraca}";
                     trenutniSocket.Send(Encoding.UTF8.GetBytes(porukaPotez));
@@ -364,16 +397,36 @@ namespace PodmorniceServer
 
                                 Console.WriteLine($"[Igrac {idTrenutnogIgraca}] -> [Igrac {idMete}]: {polje}, {rezultat}");
 
+                                if (rezultat == "POTOPIO")
+                                {
+                                    if (SvePodmornicePotopljene(meta, dimX, dimY))
+                                    {
+                                        int trenutnoAktivnih = igraciAktivni.Count(x => x);
+
+                                        if (trenutnoAktivnih - 1 <= 1)
+                                        {
+                                            rezultat = "POTOPIO_KRAJ";
+                                        }
+                                    }
+                                }
+
                                 // Rezultat ide igracu koji je gadjao
                                 trenutniSocket.Send(Encoding.UTF8.GetBytes($"REZULTAT:{rezultat}"));
 
                                 // Je li nesrecnik eliminisan?
+                                int aktivnihIgraca = igraciAktivni.Count(x => x);
                                 if (aktivniIgraci[trenutniIgrac].brojPromasaja >= dozvoljenoPromasaja)
                                 {
                                     igraciAktivni[trenutniIgrac] = false;
                                     trenutniSocket.Send(Encoding.UTF8.GetBytes("Eliminisan:Dostignut limit promasaja"));
                                     Console.WriteLine($"Igrac {idTrenutnogIgraca} je eliminisan (dostigao limit promasaja)");
                                     ponovniPokusaj = false;
+
+                                    if (aktivnihIgraca <= 1)
+                                    {
+                                        krajIgre = true;
+                                        break;
+                                    }
                                 }
 
                                 // Provera da li su sve podmornice mete unistene
@@ -381,13 +434,20 @@ namespace PodmorniceServer
                                 {
                                     igraciAktivni[idMete - 1] = false;
                                     Console.WriteLine($"Igrac {idMete} je eliminisan (sve podmornice potopljene)");
+
+                                    int preostalihAktivnih = igraciAktivni.Count(x => x);
+                                    if (preostalihAktivnih <= 1)
+                                    {
+                                        krajIgre = true;
+                                        ponovniPokusaj = false;
+                                        break;
+                                    }
                                 }
 
                                 // Da li je ostao samo jedan igrac
-                                int aktivnihIgraca = igraciAktivni.Count(x => x);
                                 if (aktivnihIgraca <= 1)
                                 {
-                                    krajIgre = true;
+                                    ponovniPokusaj = false;
                                     break;
                                 }
                             }
@@ -398,6 +458,9 @@ namespace PodmorniceServer
                             ponovniPokusaj = false;
                         }
                     }
+
+                    if (krajIgre)
+                        break;
 
                     // Sledeci igrac na potezu
                     trenutniIgrac = (trenutniIgrac + 1) % brojIgraca;
@@ -487,13 +550,16 @@ namespace PodmorniceServer
 
                 while (!sviOdgovorili)
                 {
-                    List<Socket> checkRead = new List<Socket>(clientTCPs);
-                    Socket.Select(checkRead, null, null, 10000);
+                    List<Socket> checkRead = ProveriSokete(clientTCPs);
 
-                    if (checkRead.Count == 0)
+                    try
                     {
-                        Console.WriteLine("Timeout - ne zelе svi novu igru.");
-                        break;
+                        Socket.Select(checkRead, null, null, 10000);
+                    }
+                    catch (SocketException ex)
+                    {
+                        Console.WriteLine("Socket.Select greska tokom cekanja nove igre: " + ex.Message);
+                        continue;
                     }
 
                     foreach (Socket clientSocket in checkRead)
@@ -545,7 +611,15 @@ namespace PodmorniceServer
                         catch { }
                     }
 
-                    aktivniIgraci.Clear();
+                    foreach (Igrac igrac in aktivniIgraci)
+                    {
+                        igrac.brojPromasaja = 0;
+
+                        for (int i = 0; i < dimX; i++)
+                            for (int j = 0; j < dimY; j++)
+                                igrac.tabla[i][j] = Simboli.nijeGadjano;
+                    }
+
                     for (int i = 0; i < brojIgraca; i++)
                     {
                         igraciAktivni[i] = true;
@@ -559,7 +633,7 @@ namespace PodmorniceServer
                 {
                     Console.WriteLine("\n========== NE ZELE SVI NOVU IGRU. ZATVARAM SERVER... ==========");
 
-                    foreach (Socket client in clientTCPs)
+                    foreach (Socket client in clientTCPs.ToList())
                     {
                         try
                         {
@@ -568,6 +642,9 @@ namespace PodmorniceServer
                         }
                         catch { }
                     }
+
+                    clientTCPs.Clear();
+                    novaIgra = false;
                 }
 
                 #endregion gejmplej
@@ -592,6 +669,25 @@ namespace PodmorniceServer
                     sb.Append(';');
             }
             return sb.ToString();
+        }
+
+        static List<Socket> ProveriSokete(List<Socket> sockets)
+        {
+            List<Socket> validni = new List<Socket>();
+            foreach (Socket s in sockets)
+            {
+                if (s == null) continue;
+                try
+                {
+                    if (s.Handle != IntPtr.Zero)
+                        validni.Add(s);
+                }
+                catch
+                {
+
+                }
+            }
+            return validni;
         }
 
         static bool ProveriPotopio(Igrac igrac, int pogodjenoPolje, int dimY)
