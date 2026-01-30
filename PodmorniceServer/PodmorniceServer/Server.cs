@@ -16,7 +16,7 @@ namespace PodmorniceServer
         static void Main(string[] args)
         {
             bool krajIgre = false;
-            bool novaIgra = false;
+            bool novaIgra = true;
             int brojIgraca = -1;
             int brojAktivnihIgraca = 0;
             string adresa = PronadjiIPAdresu().ToString();
@@ -33,7 +33,7 @@ namespace PodmorniceServer
             {
                 Console.WriteLine("Unesite broj igraca (minimum 2): ");
                 brojIgraca = Int32.Parse(Console.ReadLine());
-            } while (brojIgraca < 1); //todo na kraju ne zaboravi da proemnis ovo u <2
+            } while (brojIgraca < 2); //todo na kraju ne zaboravi da proemnis ovo u <2
 
             Console.WriteLine("Unesite dimenzije table X i Y: ");
             Console.Write("X: ");
@@ -696,59 +696,8 @@ namespace PodmorniceServer
             }
             return null;
         }
+        #endregion
 
-<<<<<<< Updated upstream
-        #region pronalazenje adrede servera
-        static string PronadjiIPAdresu()
-        {
-            try
-            {
-                // Prvo Ethernet
-                string ethernetIP = PronadjiIPPoTipu(NetworkInterfaceType.Ethernet);
-                if (!string.IsNullOrEmpty(ethernetIP))
-                {
-                    return ethernetIP;
-                }
-
-                // Ako nema Ethernet, onda WiFi
-                string wifiIP = PronadjiIPPoTipu(NetworkInterfaceType.Wireless80211);
-                if (!string.IsNullOrEmpty(wifiIP))
-                {
-                    return wifiIP;
-                }
-
-                // Ako nema ni Ethernet ni WiFi, Loopback
-                return IPAddress.Loopback.ToString();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Greska pri pronalazenju IP adrese: " + ex.Message);
-                return IPAddress.Loopback.ToString();
-            }
-        }
-
-        static string PronadjiIPPoTipu(NetworkInterfaceType tip)
-        {
-            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                // Da li je interfejs aktivan i odgovarajuceg tipa
-                if (ni.NetworkInterfaceType == tip && ni.OperationalStatus == OperationalStatus.Up)
-                {
-                    foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
-                    {
-                        // Samo IPv4 adrese (ne IPv6)
-                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            //Console.WriteLine($"  - Pronadjen {tip} interfejs: {ni.Name} -> {ip.Address}");
-                            return ip.Address.ToString();
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-        #endregion pronalazenje adrede servera
-=======
         static int BrojPogodjenihPodmornica(Igrac igrac, int dimX, int dimY)
         {
             int brojac = 0;
@@ -770,6 +719,5 @@ namespace PodmorniceServer
 
             return brojac / 2;
         }
->>>>>>> Stashed changes
     }
 }
