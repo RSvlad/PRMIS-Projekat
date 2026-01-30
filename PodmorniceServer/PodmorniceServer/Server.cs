@@ -571,6 +571,100 @@ namespace PodmorniceServer
                 }
 
                 #endregion gejmplej
+                }
+
+                Console.WriteLine("\nCekam odgovore igraca za novu igru...");
+
+                int brojZahteva = 0;
+                HashSet<Socket> odgovoriliIgraci = new HashSet<Socket>();
+                bool sviOdgovorili = false;
+
+                while (!sviOdgovorili)
+                {
+                    List<Socket> checkRead = new List<Socket>(clientTCPs);
+                    Socket.Select(checkRead, null, null, 10000);
+
+                    if (checkRead.Count == 0)
+                    {
+                        Console.WriteLine("Timeout - ne zelе svi novu igru.");
+                        break;
+                    }
+
+                    foreach (Socket clientSocket in checkRead)
+                    {
+                        if (odgovoriliIgraci.Contains(clientSocket))
+                            continue;
+
+                        try
+                        {
+                            byte[] bufferNI = new byte[1024];
+                            int bytesNI = clientSocket.Receive(bufferNI);
+                            string odgovor = Encoding.UTF8.GetString(bufferNI, 0, bytesNI).Trim().ToLower();
+
+                            odgovoriliIgraci.Add(clientSocket);
+                            int igracID = clientTCPs.IndexOf(clientSocket) + 1;
+
+                            if (odgovor == "nova")
+                            {
+                                brojZahteva++;
+                                Console.WriteLine($"Igrac {igracID} zeli novu igru ({brojZahteva}/{brojIgraca})");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Igrac {igracID} ne zeli novu igru");
+                            }
+
+                            if (odgovoriliIgraci.Count >= brojIgraca)
+                            {
+                                sviOdgovorili = true;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Greska pri citanju odgovora: {ex.Message}");
+                        }
+                    }
+                }
+
+                if (brojZahteva == brojIgraca)
+                {
+                    Console.WriteLine("\n========== SVI IGRACI ZELE NOVU IGRU! RESETUJEM... ==========\n");
+
+                    foreach (Socket client in clientTCPs)
+                    {
+                        try
+                        {
+                            client.Send(Encoding.UTF8.GetBytes("RESTART:Nova igra pocinje!"));
+                        }
+                        catch { }
+                    }
+
+                    aktivniIgraci.Clear();
+                    for (int i = 0; i < brojIgraca; i++)
+                    {
+                        igraciAktivni[i] = true;
+                    }
+                    krajIgre = false;
+                    trenutniIgrac = 0;
+
+                    novaIgra = true;
+                }
+                else
+                {
+                    Console.WriteLine("\n========== NE ZELE SVI NOVU IGRU. ZATVARAM SERVER... ==========");
+
+                    foreach (Socket client in clientTCPs)
+                    {
+                        try
+                        {
+                            client.Send(Encoding.UTF8.GetBytes("ZATVARANJE:Server se zatvara"));
+                            client.Close();
+                        }
+                        catch { }
+                    }
+                }
+
+                #endregion gejmplej
 
             }
 
@@ -696,6 +790,80 @@ namespace PodmorniceServer
             }
             return null;
         }
+
+<<<<<<< Updated upstream
+        #region pronalazenje adrede servera
+        static string PronadjiIPAdresu()
+        {
+            try
+            {
+                // Prvo Ethernet
+                string ethernetIP = PronadjiIPPoTipu(NetworkInterfaceType.Ethernet);
+                if (!string.IsNullOrEmpty(ethernetIP))
+                {
+                    return ethernetIP;
+                }
+
+                // Ako nema Ethernet, onda WiFi
+                string wifiIP = PronadjiIPPoTipu(NetworkInterfaceType.Wireless80211);
+                if (!string.IsNullOrEmpty(wifiIP))
+                {
+                    return wifiIP;
+                }
+
+                // Ako nema ni Ethernet ni WiFi, Loopback
+                return IPAddress.Loopback.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Greska pri pronalazenju IP adrese: " + ex.Message);
+                return IPAddress.Loopback.ToString();
+            }
+        }
+
+        static string PronadjiIPPoTipu(NetworkInterfaceType tip)
+        {
+            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                // Da li je interfejs aktivan i odgovarajuceg tipa
+                if (ni.NetworkInterfaceType == tip && ni.OperationalStatus == OperationalStatus.Up)
+                {
+                    foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
+                    {
+                        // Samo IPv4 adrese (ne IPv6)
+                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            //Console.WriteLine($"  - Pronadjen {tip} interfejs: {ni.Name} -> {ip.Address}");
+                            return ip.Address.ToString();
+                        }
+                    }
+                }
+            }
+            return null;
+        }
         #endregion pronalazenje adrede servera
+=======
+        static int BrojPogodjenihPodmornica(Igrac igrac, int dimX, int dimY)
+        {
+            int brojac = 0;
+
+            for (int i = 0; i < igrac.podmornice.Length; i++)
+            {
+                int polje = igrac.podmornice[i];
+                if (polje == -1)
+                    continue;
+
+                int red = (polje - 1) / dimY;
+                int kol = (polje - 1) % dimY;
+
+                if (igrac.tabla[red][kol] == Simboli.pogodjeno)
+                {
+                    brojac++;
+                }
+            }
+
+            return brojac / 2;
+        }
+>>>>>>> Stashed changes
     }
 }
