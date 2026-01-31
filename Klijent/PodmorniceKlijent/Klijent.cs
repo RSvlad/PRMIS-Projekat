@@ -220,6 +220,7 @@ namespace PodmorniceKlijent
                                         {
                                             nastavakPoteza = false;
                                             Console.WriteLine("Vase potez je zavrsen. Promasio si kume, ocajno");
+                                            break;
                                         }
                                         else if (status == "POGODIO")
                                         {
@@ -235,6 +236,7 @@ namespace PodmorniceKlijent
                                         {
                                             Console.WriteLine("Potopili ste POSLEDNJU podmornicu! Cekanje proglasenja pobednika...");
                                             nastavakPoteza = false;
+                                            break;
                                         }
                                     }
                                     else if (rezultat.StartsWith("Eliminisan:"))
@@ -322,7 +324,7 @@ namespace PodmorniceKlijent
                 Console.ReadKey();
             }
         }
-#region funkcije za komunikaciju
+        #region funkcije za komunikaciju
         static (int, int, int) ParsirajPoruku(string serverMessage)
         {
             Regex regex = new Regex(@"Velicina table je (\d+)\s*x\s*(\d+).*Dozvoljen broj promasaja:\s*(\d+)", RegexOptions.Singleline);

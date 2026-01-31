@@ -33,7 +33,7 @@ namespace PodmorniceServer
             {
                 Console.WriteLine("Unesite broj igraca (minimum 2): ");
                 brojIgraca = Int32.Parse(Console.ReadLine());
-            } while (brojIgraca < 2); 
+            } while (brojIgraca < 2);
 
             Console.WriteLine("Unesite dimenzije table X i Y: ");
             Console.Write("X: ");
@@ -384,13 +384,6 @@ namespace PodmorniceServer
                                     rezultat = "PROMASIO";
                                     aktivniIgraci[trenutniIgrac].brojPromasaja++;
 
-                                    if (dozvoljenoPromasaja - aktivniIgraci[trenutniIgrac].brojPromasaja == 2)
-                                    {
-                                        string upozorenje = "\n!!! UPOZORENJE !!! Imate jos samo 2 dozvoljenih promasaja pre eliminacije!";
-                                        trenutniSocket.Send(Encoding.UTF8.GetBytes($"UPOZORENJE:{upozorenje}"));
-                                        Console.WriteLine($"Igrac {idTrenutnogIgraca} je dobio upozorenje (preostalo promasaja: 2)");
-                                    }
-
                                     // Sledeci igrac na potezu
                                     ponovniPokusaj = false;
                                 }
@@ -412,6 +405,13 @@ namespace PodmorniceServer
 
                                 // Rezultat ide igracu koji je gadjao
                                 trenutniSocket.Send(Encoding.UTF8.GetBytes($"REZULTAT:{rezultat}"));
+
+                                if (dozvoljenoPromasaja - aktivniIgraci[trenutniIgrac].brojPromasaja == 2)
+                                {
+                                    string upozorenje = "\n!!! UPOZORENJE !!! Imate jos samo 2 dozvoljenih promasaja pre eliminacije!";
+                                    trenutniSocket.Send(Encoding.UTF8.GetBytes($"UPOZORENJE:{upozorenje}"));
+                                    Console.WriteLine($"Igrac {idTrenutnogIgraca} je dobio upozorenje (preostalo promasaja: 2)");
+                                }
 
                                 // Je li nesrecnik eliminisan?
                                 int aktivnihIgraca = igraciAktivni.Count(x => x);
