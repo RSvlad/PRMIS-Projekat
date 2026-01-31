@@ -322,21 +322,7 @@ namespace PodmorniceKlijent
                 Console.ReadKey();
             }
         }
-
-        static void PrikaziTablu(string tablaPodaci, int dimX, int dimY)
-        {
-            string[] redovi = tablaPodaci.Split(';');
-            for (int i = 0; i < redovi.Length; i++)
-            {
-                string[] kolone = redovi[i].Split(',');
-                for (int j = 0; j < kolone.Length; j++)
-                {
-                    Console.Write(kolone[j] + " ");
-                }
-                Console.WriteLine();
-            }
-        }
-
+#region funkcije za komunikaciju
         static (int, int, int) ParsirajPoruku(string serverMessage)
         {
             Regex regex = new Regex(@"Velicina table je (\d+)\s*x\s*(\d+).*Dozvoljen broj promasaja:\s*(\d+)", RegexOptions.Singleline);
@@ -354,6 +340,23 @@ namespace PodmorniceKlijent
 
             return (dimX, dimY, dozvoljenoPromasaja);
         }
+        #endregion funkcije za komunikaciju
+
+        #region funkcije igre
+        static void PrikaziTablu(string tablaPodaci, int dimX, int dimY)
+        {
+            string[] redovi = tablaPodaci.Split(';');
+            for (int i = 0; i < redovi.Length; i++)
+            {
+                string[] kolone = redovi[i].Split(',');
+                for (int j = 0; j < kolone.Length; j++)
+                {
+                    Console.Write(kolone[j] + " ");
+                }
+                Console.WriteLine();
+            }
+        }
+
         static int[] unesiPodmornice(int dimX, int dimY)
         {
             int[] brojevi = new int[dimX * dimY];
@@ -416,6 +419,7 @@ namespace PodmorniceKlijent
             }
             return brojevi;
         }
+        #endregion funkcije igre
     }
 
 }

@@ -33,7 +33,7 @@ namespace PodmorniceServer
             {
                 Console.WriteLine("Unesite broj igraca (minimum 2): ");
                 brojIgraca = Int32.Parse(Console.ReadLine());
-            } while (brojIgraca < 2); //todo na kraju ne zaboravi da proemnis ovo u <2
+            } while (brojIgraca < 2); 
 
             Console.WriteLine("Unesite dimenzije table X i Y: ");
             Console.Write("X: ");
@@ -654,6 +654,8 @@ namespace PodmorniceServer
             serverTCP.Close();
             Console.ReadKey();
         }
+
+        #region funkcije za komunuikaciju
         static string SerijalizujTablu(int[][] tabla, int dimX, int dimY)
         {
             StringBuilder sb = new StringBuilder();
@@ -689,7 +691,9 @@ namespace PodmorniceServer
             }
             return validni;
         }
+        #endregion funkcije za komunuikaciju
 
+        #region funkcije igre
         static bool ProveriPotopio(Igrac igrac, int pogodjenoPolje, int dimY)
         {
             // jer podmornice imaju 2 polja svaka
@@ -742,6 +746,28 @@ namespace PodmorniceServer
                 Console.WriteLine();
             }
         }
+        static int BrojPogodjenihPodmornica(Igrac igrac, int dimX, int dimY)
+        {
+            int brojac = 0;
+
+            for (int i = 0; i < igrac.podmornice.Length; i++)
+            {
+                int polje = igrac.podmornice[i];
+                if (polje == -1)
+                    continue;
+
+                int red = (polje - 1) / dimY;
+                int kol = (polje - 1) % dimY;
+
+                if (igrac.tabla[red][kol] == Simboli.pogodjeno)
+                {
+                    brojac++;
+                }
+            }
+
+            return brojac / 2;
+        }
+        #endregion funkcije igre
 
         #region pronalazenje adrede servera
         static string PronadjiIPAdresu()
@@ -794,26 +820,5 @@ namespace PodmorniceServer
         }
         #endregion
 
-        static int BrojPogodjenihPodmornica(Igrac igrac, int dimX, int dimY)
-        {
-            int brojac = 0;
-
-            for (int i = 0; i < igrac.podmornice.Length; i++)
-            {
-                int polje = igrac.podmornice[i];
-                if (polje == -1)
-                    continue;
-
-                int red = (polje - 1) / dimY;
-                int kol = (polje - 1) % dimY;
-
-                if (igrac.tabla[red][kol] == Simboli.pogodjeno)
-                {
-                    brojac++;
-                }
-            }
-
-            return brojac / 2;
-        }
     }
 }
