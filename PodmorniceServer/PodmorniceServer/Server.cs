@@ -405,14 +405,18 @@ namespace PodmorniceServer
                                 }
 
                                 // Rezultat ide igracu koji je gadjao
-                                trenutniSocket.Send(Encoding.UTF8.GetBytes($"REZULTAT:{rezultat}"));
+                                string porukaZaSlanje = $"REZULTAT:{rezultat}";
 
                                 if (dozvoljenoPromasaja - aktivniIgraci[trenutniIgrac].brojPromasaja == 2)
                                 {
-                                    string upozorenje = "\n!!! UPOZORENJE !!! Imate jos samo 2 dozvoljenih promasaja pre eliminacije!";
-                                    trenutniSocket.Send(Encoding.UTF8.GetBytes($"UPOZORENJE:{upozorenje}"));
+                                    string tekstUpozorenja = "Imate jos samo 2 dozvoljena promasaja pre eliminacije!";
+
+                                    porukaZaSlanje += $"|UPOZORENJE:{tekstUpozorenja}";
+
                                     Console.WriteLine($"Igrac {idTrenutnogIgraca} je dobio upozorenje (preostalo promasaja: 2)");
                                 }
+
+                                trenutniSocket.Send(Encoding.UTF8.GetBytes(porukaZaSlanje));
 
                                 // Je li nesrecnik eliminisan?
                                 int aktivnihIgraca = igraciAktivni.Count(x => x);

@@ -202,7 +202,21 @@ namespace PodmorniceKlijent
                                     // Primanje rezultata
                                     byte[] bufferRezultat = new byte[1024];
                                     int bytesRezultat = clientTCP.Receive(bufferRezultat);
-                                    string rezultat = Encoding.UTF8.GetString(bufferRezultat, 0, bytesRezultat);
+                                    string odgovor = Encoding.UTF8.GetString(bufferRezultat, 0, bytesRezultat);
+
+                                    if (odgovor.Contains("|UPOZORENJE:"))
+                                    {
+                                        string[] deloviPoruke = odgovor.Split('|');
+                                        odgovor = deloviPoruke[0];
+
+
+                                        string tekstUpozorenja = deloviPoruke[1].Split(':')[1];
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                        Console.WriteLine($"\n*** {tekstUpozorenja} ***");
+                                        Console.ResetColor();
+                                    }
+
+                                    string rezultat = odgovor;
 
                                     if (rezultat.StartsWith("Greska:"))
                                     {
