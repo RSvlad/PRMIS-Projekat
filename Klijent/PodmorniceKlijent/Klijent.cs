@@ -99,28 +99,27 @@ namespace PodmorniceKlijent
                 #endregion uspostavljanje TCP veze i primanje podataka za pocetak igre
                 clientUDP.Close();
 
-
-                #region postavkaTable
-
-                if (dimX == -1 || dimY == -1 || dozvoljenoPromasaja == -1)
-                {
-                    Console.WriteLine("Greska pri parsiranju dimenzija table ili dozvoljenog broja promasaja.");
-                    return;
-                }
-
-                bool postavljeno = false;
-                while (!postavljeno)
-                {
-                    int[] uneseneVrednosti = unesiPodmornice(dimX, dimY);
-                    clientTCP.Send(Encoding.UTF8.GetBytes(string.Join(",", uneseneVrednosti)));
-                    postavljeno = true;
-                }
-
-                #endregion postavkaTable
-
                 bool igraSeNastavlja = true;
                 while (igraSeNastavlja)
                 {
+                    #region postavkaTable
+
+                    if (dimX == -1 || dimY == -1 || dozvoljenoPromasaja == -1)
+                    {
+                        Console.WriteLine("Greska pri parsiranju dimenzija table ili dozvoljenog broja promasaja.");
+                        return;
+                    }
+
+                    bool postavljeno = false;
+                    while (!postavljeno)
+                    {
+                        int[] uneseneVrednosti = unesiPodmornice(dimX, dimY);
+                        clientTCP.Send(Encoding.UTF8.GetBytes(string.Join(",", uneseneVrednosti)));
+                        postavljeno = true;
+                    }
+
+                    #endregion postavkaTable
+
                     #region gejmplej
 
                     Console.WriteLine("\nCekam da igra pocne...");

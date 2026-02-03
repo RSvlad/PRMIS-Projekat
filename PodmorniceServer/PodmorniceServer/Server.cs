@@ -167,91 +167,6 @@ namespace PodmorniceServer
 
             #endregion uspostavljanje TCP veze SA SELECT
 
-            #region postavkeTabli SA SELECT
-
-            bool postavljeno = false;
-            byte[] buffer = new byte[1024];
-            HashSet<Socket> klijentiKojiSuPoslali = new HashSet<Socket>();
-
-            Console.WriteLine("Cekam podatke o podmornicama od svih klijenata...");
-
-            while (!postavljeno)
-            {
-                List<Socket> checkRead = ProveriSokete(clientTCPs);
-
-                if (checkRead.Count == 0)
-                {
-                    Console.WriteLine("Nema validnih klijenata za pocetak.");
-                    break;
-                }
-
-                try
-                {
-                    Socket.Select(checkRead, null, null, 100000);
-                }
-                catch (SocketException ex)
-                {
-                    Console.WriteLine("Socket.Select greska prilikom primanja tabli: " + ex.Message);
-                    continue;
-                }
-
-                foreach (Socket clientSocket in checkRead)
-                {
-                    try
-                    {
-                        int dostupnoBajtova = clientSocket.Available;
-
-                        if (dostupnoBajtova > 0)
-                        {
-                            int byteNo = clientSocket.Receive(buffer);
-                            string primljenaPoruka = Encoding.UTF8.GetString(buffer, 0, byteNo);
-                            int[] podmornice = primljenaPoruka.Split(',').Select(int.Parse).ToArray();
-
-                            int brojAktivnogIgraca = clientTCPs.IndexOf(clientSocket) + 1;
-                            aktivniIgraci[brojAktivnogIgraca - 1].podmornice = podmornice;
-
-                            Console.WriteLine($"\nPodaci od igraca {brojAktivnogIgraca}");
-                            foreach (int podmornica in podmornice)
-                            {
-                                if (podmornica != -1)
-                                {
-                                    Console.WriteLine($"  - Podmornica na polju: {podmornica}");
-                                }
-                            }
-
-                            int[][] praznaTabla = new int[dimX][];
-                            for (int i = 0; i < dimX; i++)
-                            {
-                                praznaTabla[i] = new int[dimY]; //moram i kolone da inicijalizujem da ne bi bio null error opet
-                                for (int j = 0; j < dimY; j++)
-                                    praznaTabla[i][j] = Simboli.nijeGadjano;
-                            }
-
-                            Console.WriteLine($"Tabla igraca {brojAktivnogIgraca}:");
-                            IspisiTablu(praznaTabla, dimX, dimY);
-
-                            aktivniIgraci[brojAktivnogIgraca - 1].tabla = praznaTabla;
-                            klijentiKojiSuPoslali.Add(clientSocket);
-
-                            Console.WriteLine($"Primljeno {klijentiKojiSuPoslali.Count}/{brojIgraca} tabli.\n");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        int brojIgraca_err = clientTCPs.IndexOf(clientSocket) + 1;
-                        Console.WriteLine($"Greska pri obradi podataka od igraca {brojIgraca_err}: " + ex.Message);
-                    }
-                }
-
-                if (klijentiKojiSuPoslali.Count >= brojIgraca)
-                {
-                    postavljeno = true;
-                    Console.WriteLine("\nSVI IGRACI SU POSTAVILI SVOJE PODMORNICE");
-                }
-            }
-
-            #endregion postavkeTabli SA SELECT
-
             #region gejmplej
             Console.WriteLine("\n========== IGRA POCINJE! ==========\n");
 
@@ -262,6 +177,92 @@ namespace PodmorniceServer
 
             while (novaIgra)
             {
+
+                #region postavkeTabli SA SELECT
+
+                bool postavljeno = false;
+                byte[] buffer = new byte[1024];
+                HashSet<Socket> klijentiKojiSuPoslali = new HashSet<Socket>();
+
+                Console.WriteLine("Cekam podatke o podmornicama od svih klijenata...");
+
+                while (!postavljeno)
+                {
+                    List<Socket> checkRead = ProveriSokete(clientTCPs);
+
+                    if (checkRead.Count == 0)
+                    {
+                        Console.WriteLine("Nema validnih klijenata za pocetak.");
+                        break;
+                    }
+
+                    try
+                    {
+                        Socket.Select(checkRead, null, null, 100000);
+                    }
+                    catch (SocketException ex)
+                    {
+                        Console.WriteLine("Socket.Select greska prilikom primanja tabli: " + ex.Message);
+                        continue;
+                    }
+
+                    foreach (Socket clientSocket in checkRead)
+                    {
+                        try
+                        {
+                            int dostupnoBajtova = clientSocket.Available;
+
+                            if (dostupnoBajtova > 0)
+                            {
+                                int byteNo = clientSocket.Receive(buffer);
+                                string primljenaPoruka = Encoding.UTF8.GetString(buffer, 0, byteNo);
+                                int[] podmornice = primljenaPoruka.Split(',').Select(int.Parse).ToArray();
+
+                                int brojAktivnogIgraca = clientTCPs.IndexOf(clientSocket) + 1;
+                                aktivniIgraci[brojAktivnogIgraca - 1].podmornice = podmornice;
+
+                                Console.WriteLine($"\nPodaci od igraca {brojAktivnogIgraca}");
+                                foreach (int podmornica in podmornice)
+                                {
+                                    if (podmornica != -1)
+                                    {
+                                        Console.WriteLine($"  - Podmornica na polju: {podmornica}");
+                                    }
+                                }
+
+                                int[][] praznaTabla = new int[dimX][];
+                                for (int i = 0; i < dimX; i++)
+                                {
+                                    praznaTabla[i] = new int[dimY]; //moram i kolone da inicijalizujem da ne bi bio null error opet
+                                    for (int j = 0; j < dimY; j++)
+                                        praznaTabla[i][j] = Simboli.nijeGadjano;
+                                }
+
+                                Console.WriteLine($"Tabla igraca {brojAktivnogIgraca}:");
+                                IspisiTablu(praznaTabla, dimX, dimY);
+
+                                aktivniIgraci[brojAktivnogIgraca - 1].tabla = praznaTabla;
+                                klijentiKojiSuPoslali.Add(clientSocket);
+
+                                Console.WriteLine($"Primljeno {klijentiKojiSuPoslali.Count}/{brojIgraca} tabli.\n");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            int brojIgraca_err = clientTCPs.IndexOf(clientSocket) + 1;
+                            Console.WriteLine($"Greska pri obradi podataka od igraca {brojIgraca_err}: " + ex.Message);
+                        }
+                    }
+
+                    if (klijentiKojiSuPoslali.Count >= brojIgraca)
+                    {
+                        postavljeno = true;
+                        Console.WriteLine("\nSVI IGRACI SU POSTAVILI SVOJE PODMORNICE");
+                    }
+                }
+
+                #endregion postavkeTabli SA SELECT
+
                 string porukaPocetak = "start";
                 foreach (Socket client in clientTCPs)
                 {
